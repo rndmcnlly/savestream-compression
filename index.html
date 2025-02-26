@@ -46,7 +46,7 @@
           startIn: "downloads",
           suggestedName: "last.savestream"
         });
-        let writeableHandle = await saveHandle.writeableHandle();
+        let writeableHandle = await saveHandle.createWritable();
         await writeableHandle.write(new TextEncoder().encode("meow\n").buffer);
         await writeableHandle.close();
       };
