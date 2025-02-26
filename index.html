@@ -10,43 +10,46 @@
     </style>
   </head>
   <body>
-    <!-- We want a button you cna press to select a bunch of files
-     https://developer.mozilla.org/en-US/docs/Web/API/Window/showOpenFilePicker
-
-      -->
-
-    <!-- Once the files are selected, we should produce some report about them
-        Maybe their sizes -->
-
     <button id="load_files_button">load files</button>
 
-    <div id="report_area">
-    Load files to see a report about them.
-    </div>
-    
+    <progress id="progress_bar" max="100" value="0"></progress>
+    <div id="report_area">Load files to see a report about them.</div>
+
     <script>
       let button = document.getElementById("load_files_button");
-      button.onclick = async function() {
+      button.onclick = async function () {
         const handles = await window.showOpenFilePicker({
-          multiple: true
+          multiple: true,
         });
-        
+
         const reportArea = document.getElementById("report_area");
+        const progressBar = document.getElementById("progress_bar");
         reportArea.innerHTML = "";
-        
-        
-        for (let handle of handles) {
+
+        let numHandles = handles.length;
+        for (let i = 0; i < numHandles; i++) {
+          const handle = handles[i];
           let file = await handle.getFile();
           let buffer = await file.arrayBuffer();
           let dataView = new DataView(buffer);
           let magic = dataView.getUint32(0);
-          
+
           const div = document.createElement("div");
-          div.innerHTML = file.name + JSON.stringify({length: buffer.byteLength, magic});
+          div.innerHTML =
+            file.name + JSON.stringify({ length: buffer.byteLength, magic });
           reportArea.append(div);
+
+          progressBar.value = (100 * (i + 1)) / numHandles;
         }
+
+        let saveHandle = await window.showSaveFilePicker({
+          startIn: "downloads",
+          suggestedName: "last.savestream"
+        });
+        let writeableHandle = await saveHandle.writeableHandle();
+        await writeableHandle.write(new TextEncoder().encode("meow\n").buffer);
+        await writeableHandle.close();
       };
-      
     </script>
   </body>
 </html>
