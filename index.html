@@ -51,7 +51,31 @@
         await writeableHandle.close();
       };
       
-      
+      function findUniqueBlocks(arrayBuffer) {
+        const BLOCK_SIZE = 256;
+        const blockCount = Math.floor(arrayBuffer.byteLength / BLOCK_SIZE);
+
+        const uniqueBlockIds = new Map();
+        const uniqueBlocks = [];
+
+        const blockSequence = [];
+        const decoder = new TextDecoder();
+
+        for (let i = 0; i < blockCount; i++) {
+          const offset = i * BLOCK_SIZE;
+
+          const block = new Uint8Array(arrayBuffer, offset, BLOCK_SIZE); // a view into the large buffer
+          const blockKey = decoder.decode(block);
+
+          if (!uniqueBlockIds.get(blockKey)) {
+            uniqueBlockIds.set(blockKey, uniqueBlockIds.size);
+            uniqueBlocks.push(block.slice()); // an independent copy
+          }
+          blockSequence.push(uniqueBlockIds.get(blockKey));
+        }
+
+        return { uniqueBlocks, blockSequence };
+      }
     </script>
   </body>
 </html>
