@@ -26,21 +26,39 @@
         const progressBar = document.getElementById("progress_bar");
         reportArea.innerHTML = "";
 
+        let allBlocks = new Map();
+        let fileReports = [];
         let numHandles = handles.length;
         for (let i = 0; i < numHandles; i++) {
           const handle = handles[i];
           let file = await handle.getFile();
           let buffer = await file.arrayBuffer();
-          let dataView = new DataView(buffer);
-          let magic = dataView.getUint32(0);
-
-          const div = document.createElement("div");
-          div.innerHTML =
-            file.name + JSON.stringify({ length: buffer.byteLength, magic });
-          reportArea.append(div);
-
+//           let dataView = new DataView(buffer);
+//           let magic = dataView.getUint32(0);
+          
+          let { uniqueBlocks, blockSequence } = findUniqueBlocks(buffer);
+          
+          fileReports.push({
+            name: file.name,
+            length: buffer.byteLength,
+            blocks: blockSequence.length,
+          });
+          
+          uniqueBlocks.forEach((block, index) => {
+            const blockKey = new TextDecoder().decode(block);
+            if(!allBlocks.has(blockKey)) {
+              allBlocks.set(blockKey, block);
+            }
+          });
+          
           progressBar.value = (100 * (i + 1)) / numHandles;
         }
+        
+        fileReports.forEach((report) => {
+          const div = document.createElement("div");
+          div.innerHTML = `${report.name}: ${JSON.stringify(report)}`;
+          reportArea.append(div);
+        });
 
         let saveHandle = await window.showSaveFilePicker({
           startIn: "downloads",
