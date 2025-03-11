@@ -14,12 +14,14 @@ button.onclick = async function () {
   let fileReports = [];
   let numHandles = handles.length;
   
+  // loop through each file
   for (let i = 0; i < numHandles; i++) {
     const handle = handles[i];
     let file = await handle.getFile();
     let buffer = await file.arrayBuffer();
-    let dataView = new DataView(buffer);
-    let magic = dataView.getUint32(0);
+    let view32 = new Uint32Array(buffer);
+    // let dataView = new DataView(buffer);
+    // let magic = dataView.getUint32(0);
 
     let { uniqueBlocks, blockSequence } = findUniqueBlocks(buffer);
 
@@ -54,8 +56,8 @@ button.onclick = async function () {
   await writeableHandle.close();
 };
 
-// params - (fileContent: ArrayBuffer)
-// returns - {header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer}
+// params - (fileContent: Uint32Array)
+// returns - {header: Uint32Array, infoSegment: Uint32Array, bufferSegment: Uint32Array}
 function unpack(fileContent) {
   const blockStart = 16
   const infoLenIndex = 3
@@ -76,8 +78,8 @@ function unpack(fileContent) {
   
 }
 
-// params - {header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer}
-// returns - (fileContent: ArrayBuffer)
+// params - {header: Uint32Array, infoSegment: Uint32Array, bufferSegment: Uint32Array}
+// returns - (fileContent: Uint32Array)
 function repack(header, infoSegment, bufferSegment) {
   
 }
