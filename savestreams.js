@@ -54,7 +54,12 @@ button.onclick = async function () {
 //params - (file_content: ArrayBuffer)
 //returns - {header: ArrayBuffer, info_segment: ArrayBuffer, buffer_segment: ArrayBuffer}
 function unpack(file_content) {
-  header = file_content
+  let header = file_content.slice(0, 16)
+  
+  // get info_len from header
+  let dv = new DataView(header)
+  
+  
 }
 
 //params - {header: ArrayBuffer, info_segment: ArrayBuffer, buffer_segment: ArrayBuffer}
