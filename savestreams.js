@@ -20,7 +20,7 @@ button.onclick = async function () {
     let file = await handle.getFile();
     let buffer = await file.arrayBuffer();
     let view32 = new Uint32Array(buffer);
-    // let dataView = new DataView(buffer);
+    let dataView = new DataView(buffer);
     // let magic = dataView.getUint32(0);
 
     let { uniqueBlocks, blockSequence } = findUniqueBlocks(buffer);
@@ -56,33 +56,33 @@ button.onclick = async function () {
   await writeableHandle.close();
 };
 
-// params - (fileContent: Uint32Array)
-// returns - {header: Uint32Array, infoSegment: Uint32Array, bufferSegment: Uint32Array}
+// params - (fileContent: ArrayBuffer)
+// returns - {header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer}
 function unpack(fileContent) {
   const blockStart = 16
   const infoLenIndex = 3
+  let dataView = new DataView(fileContent);
   
   let header = fileContent.slice(0, blockStart)
   
   // get infoLen from header
-  let dv = new DataView(header)
-  let infoLen = dv.getInt32(infoLenIndex * 4, true); // Set to true for little-endian, false for big-endian
-  
+  let infoLen = dataView.getInt32(infoLenIndex * 4, true); // Set to true for little-endian, false for big-endian
   let infoSegment = fileContent.slice(blockStart, blockStart + infoLen)
   
   // align bufferOffset to the next multiple of 4 (32 bit = 4 bytes)
   let bufferOffset = blockStart + infoLen
   bufferOffset = bufferOffset + 3 & ~3
   
-  let bufferSegment = fileContent(bufferOffset)
+  let bufferSegment = fileContent.slice(bufferOffset)
   
   return {header, infoSegment, bufferSegment};
 }
 
-// params - (header: Uint32Array, infoSegment: Uint32Array, bufferSegment: Uint32Array)
-// returns - fileContent: Uint32Array
+// params - (header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer)
+// returns - fileContent: ArrayBuffer
 function repack(header, infoSegment, bufferSegment) {
-  let padding = infoSegment.length  
+  let padding = (infoSegment.byteLength + 3 & ~3) - infoSegment.byteLength
+  infoSegment = infoSegment + 
 }
 
 // 
