@@ -59,11 +59,11 @@ function unpack(arr) {
 
 //params - {header: ArrayBuffer, info_segment: ArrayBuffer, buffer_segment: ArrayBuffer}
 // returns - (arr: ArrayBuffer)
-function repack() {
+function repack(header, info_segment, buffer_segment) {
   
 }
 
-function align() {
+function align(header, info_segment, buffer_segment) {
   
 }
 
