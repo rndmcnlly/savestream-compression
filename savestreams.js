@@ -56,6 +56,7 @@ button.onclick = async function () {
   await writeableHandle.close();
 };
 
+// 
 // params - (fileContent: ArrayBuffer)
 // returns - {header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer}
 function unpack(fileContent) {
@@ -65,7 +66,7 @@ function unpack(fileContent) {
   let header = fileContent.slice(0, blockStart);
   
   // get infoLen from header
-  let headerDV = new DataView(header)
+  let headerDV = new DataView(header);
   let infoLen = headerDV.getInt32(infoLenIndex * 4, true); // Set to true for little-endian, false for big-endian
   
   let infoSegment = fileContent.slice(blockStart, blockStart + infoLen);
