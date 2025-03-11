@@ -1,9 +1,11 @@
 let button = document.getElementById("load_files_button");
+
 button.onclick = async function () {
   const handles = await window.showOpenFilePicker({
     multiple: true,
   });
 
+  // styling around file picker
   const reportArea = document.getElementById("report_area");
   const progressBar = document.getElementById("progress_bar");
   reportArea.innerHTML = "";
@@ -11,12 +13,13 @@ button.onclick = async function () {
   let allBlocks = new Map();
   let fileReports = [];
   let numHandles = handles.length;
+  
   for (let i = 0; i < numHandles; i++) {
     const handle = handles[i];
     let file = await handle.getFile();
     let buffer = await file.arrayBuffer();
-//           let dataView = new DataView(buffer);
-//           let magic = dataView.getUint32(0);
+    let dataView = new DataView(buffer);
+    let magic = dataView.getUint32(0);
 
     let { uniqueBlocks, blockSequence } = findUniqueBlocks(buffer);
 
