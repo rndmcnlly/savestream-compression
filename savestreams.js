@@ -51,10 +51,14 @@ button.onclick = async function () {
   await writeableHandle.close();
 };
 
-function unpack() {
+//params - (arr: ArrayBuffer)
+//returns - {header: ArrayBuffer, info_segment: ArrayBuffer, buffer_segment: ArrayBuffer}
+function unpack(arr) {
   
 }
 
+//params - {header: ArrayBuffer, info_segment: ArrayBuffer, buffer_segment: ArrayBuffer}
+// returns - (arr: ArrayBuffer)
 function repack() {
   
 }
