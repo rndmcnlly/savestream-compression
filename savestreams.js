@@ -74,16 +74,18 @@ function unpack(fileContent) {
   let bufferOffset = blockStart + infoLen
   bufferOffset = bufferOffset + 3 & ~3
   
-  let bufferSegment = fileContent(buffer)
+  let bufferSegment = fileContent(bufferOffset)
   
+  return {header, infoSegment, bufferSegment};
 }
 
-// params - {header: Uint32Array, infoSegment: Uint32Array, bufferSegment: Uint32Array}
-// returns - (fileContent: Uint32Array)
+// params - (header: Uint32Array, infoSegment: Uint32Array, bufferSegment: Uint32Array)
+// returns - fileContent: Uint32Array
 function repack(header, infoSegment, bufferSegment) {
   
 }
 
+// 
 function align(header, infoSegment, bufferSegment) {
   
 }
