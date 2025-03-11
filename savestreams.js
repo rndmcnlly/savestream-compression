@@ -82,7 +82,7 @@ function unpack(fileContent) {
 // params - (header: Uint32Array, infoSegment: Uint32Array, bufferSegment: Uint32Array)
 // returns - fileContent: Uint32Array
 function repack(header, infoSegment, bufferSegment) {
-  
+  let padding = infoSegment.length  
 }
 
 // 
