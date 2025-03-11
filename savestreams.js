@@ -69,6 +69,7 @@ function unpack(fileContent) {
   let bufferOffset = blockStart + infoLen
   bufferOffset = bufferOffset + 3 & ~3
   
+  let bufferSegment = fileContent(buffer)
   
 }
 
