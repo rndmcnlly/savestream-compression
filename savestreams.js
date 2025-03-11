@@ -80,7 +80,7 @@ function unpack(fileContent) {
   return {header, infoSegment, bufferSegment};
 }
 
-// 
+// takes in header, infoSegment, and bufferSegment and reconstructs original buffer
 // params - (header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer)
 // returns - fileContent: ArrayBuffer
 function repack(header, infoSegment, bufferSegment) {
@@ -92,15 +92,15 @@ function repack(header, infoSegment, bufferSegment) {
   let paddedInfoSegment = new Uint8Array(infoLen + padding);
   paddedInfoSegment.set(new Uint8Array(infoSegment));
   
-  // create final array buffer with total length of header, padderInfoSegment, and bufferSegment
-  let finalBuffer = new Uint8Array(header.byteLength + paddedInfoSegment.byteLength + bufferSegment.byteLength);
+  // create fileContent array buffer with total length of header, padderInfoSegment, and bufferSegment
+  let fileContent = new Uint8Array(header.byteLength + paddedInfoSegment.byteLength + bufferSegment.byteLength);
   
   // populate final buffer
-  finalBuffer.set(new Uint8Array(header), 0);
-  finalBuffer.set(paddedInfoSegment, header.byteLength);
-  finalBuffer.set(new Uint8Array(bufferSegment), header.byteLength + paddedInfoSegment.byteLength);
+  fileContent.set(new Uint8Array(header), 0);
+  fileContent.set(paddedInfoSegment, header.byteLength);
+  fileContent.set(new Uint8Array(bufferSegment), header.byteLength + paddedInfoSegment.byteLength);
   
-  return finalBuffer.buffer;
+  return fileContent.buffer;
 }
 
 // 
