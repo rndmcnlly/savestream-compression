@@ -51,24 +51,34 @@ button.onclick = async function () {
   await writeableHandle.close();
 };
 
-//params - (file_content: ArrayBuffer)
-//returns - {header: ArrayBuffer, info_segment: ArrayBuffer, buffer_segment: ArrayBuffer}
-function unpack(file_content) {
-  let header = file_content.slice(0, 16)
+// params - (fileContent: ArrayBuffer)
+// returns - {header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer}
+function unpack(fileContent) {
+  const blockStart = 16
+  const infoLenIndex = 3
   
-  // get info_len from header
+  let header = fileContent.slice(0, blockStart)
+  
+  // get infoLen from header
   let dv = new DataView(header)
+  let infoLen = dv.getInt32(infoLenIndex * 4, true); // Set to true for little-endian, false for big-endian
+  
+  let infoSegment = fileContent.slice(blockStart, blockStart + infoLen)
+  
+  // align bufferOffset to the next multiple of 4 (32 bit = 4 bytes)
+  let bufferOffset = blockStart + infoLen
+  bufferOffset = bufferOffset + 3 & ~3
   
   
 }
 
-//params - {header: ArrayBuffer, info_segment: ArrayBuffer, buffer_segment: ArrayBuffer}
-// returns - (file_content: ArrayBuffer)
-function repack(header, info_segment, buffer_segment) {
+// params - {header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer}
+// returns - (fileContent: ArrayBuffer)
+function repack(header, infoSegment, bufferSegment) {
   
 }
 
-function align(header, info_segment, buffer_segment) {
+function align(header, infoSegment, bufferSegment) {
   
 }
 
