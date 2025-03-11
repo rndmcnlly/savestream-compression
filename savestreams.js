@@ -56,7 +56,7 @@ button.onclick = async function () {
   await writeableHandle.close();
 };
 
-// 
+// unpacks an array buffer containing a v86 state into a header, info, and buffer segment
 // params - (fileContent: ArrayBuffer)
 // returns - {header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer}
 function unpack(fileContent) {
@@ -80,6 +80,7 @@ function unpack(fileContent) {
   return {header, infoSegment, bufferSegment};
 }
 
+// 
 // params - (header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer)
 // returns - fileContent: ArrayBuffer
 function repack(header, infoSegment, bufferSegment) {
