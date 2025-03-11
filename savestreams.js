@@ -59,21 +59,22 @@ button.onclick = async function () {
 // params - (fileContent: ArrayBuffer)
 // returns - {header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer}
 function unpack(fileContent) {
-  const blockStart = 16
-  const infoLenIndex = 3
-  let dataView = new DataView(fileContent);
+  const blockStart = 16;
+  const infoLenIndex = 3;
   
-  let header = fileContent.slice(0, blockStart)
+  let header = fileContent.slice(0, blockStart);
   
   // get infoLen from header
-  let infoLen = dataView.getInt32(infoLenIndex * 4, true); // Set to true for little-endian, false for big-endian
-  let infoSegment = fileContent.slice(blockStart, blockStart + infoLen)
+  let headerDV = new DataView(header)
+  let infoLen = headerDV.getInt32(infoLenIndex * 4, true); // Set to true for little-endian, false for big-endian
+  
+  let infoSegment = fileContent.slice(blockStart, blockStart + infoLen);
   
   // align bufferOffset to the next multiple of 4 (32 bit = 4 bytes)
-  let bufferOffset = blockStart + infoLen
-  bufferOffset = bufferOffset + 3 & ~3
+  let bufferOffset = blockStart + infoLen;
+  bufferOffset = bufferOffset + 3 & ~3;
   
-  let bufferSegment = fileContent.slice(bufferOffset)
+  let bufferSegment = fileContent.slice(bufferOffset);
   
   return {header, infoSegment, bufferSegment};
 }
@@ -81,8 +82,23 @@ function unpack(fileContent) {
 // params - (header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer)
 // returns - fileContent: ArrayBuffer
 function repack(header, infoSegment, bufferSegment) {
-  let padding = (infoSegment.byteLength + 3 & ~3) - infoSegment.byteLength
-  infoSegment = infoSegment + 
+  // find padded info segment total length
+  let infoLen = infoSegment.byteLength;
+  let padding = (infoLen + 3 & ~3) - infoLen;
+  
+  // create new arraybuffer for paddedInfoSegment
+  let paddedInfoSegment = new Uint8Array(infoLen + padding);
+  paddedInfoSegment.set(new Uint8Array(infoSegment));
+  
+  // create final array buffer with total length of header, padderInfoSegment, and bufferSegment
+  let finalBuffer = new Uint8Array(header.byteLength + paddedInfoSegment.byteLength + bufferSegment.byteLength);
+  
+  // populate final buffer
+  finalBuffer.set(new Uint8Array(header), 0);
+  finalBuffer.set(paddedInfoSegment, header.byteLength);
+  finalBuffer.set(new Uint8Array(bufferSegment), header.byteLength + paddedInfoSegment.byteLength);
+  
+  return finalBuffer.buffer;
 }
 
 // 
