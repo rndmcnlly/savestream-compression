@@ -104,6 +104,8 @@ function repack(header, infoSegment, bufferSegment) {
 }
 
 // 
+// params - ()
+// returns - fileContent
 function align(header, infoSegment, bufferSegment) {
   
 }
