@@ -176,8 +176,21 @@ function unalign(infoSegment, alignedBuffer, blockSize) {
 // finds unique blocks of current buffer segment, given a map of known blocks
 // params - (alignedBuffer: ArrayBuffer, knownBlocks: Map<int, ArrayBuffer>, blockSize: int)
 // returns - {newBlocks: Map<int, ArrayBuffer>, blockSequence: Array<int>}
-function deduplicate() {
-  const blockCount = 
+function deduplicate(alignedBuffer, knownBlocks, blockSize) {
+  const decoder = new TextDecoder();
+  const blockCount = Math.floor(alignedBuffer.byteLength / blockSize);
+  
+  // keeps track of unique blocks from this state
+  const newBlocks = new Map()
+  const blockSequence = [];
+  
+  for(let i = 0; i < blockCount; i++) {
+    const offset = i * blockSize;
+    
+    const block = new Uint8Array(alignedBuffer, offset, blockSize); // a view into the large buffer
+    const blockKey = decoder.decode(block);
+    
+  }
 }
 
 // given known blocks and block sequence, reduplicates buffer
