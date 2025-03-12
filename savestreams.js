@@ -103,7 +103,7 @@ function repack(header, infoSegment, bufferSegment) {
   return fileContent.buffer;
 }
 
-// 
+// aligns buffer block to an alignment of specified block size
 // params - (infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer, blockSize: int)
 // returns - fileContent
 function align(header, infoSegment, bufferSegment) {
