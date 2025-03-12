@@ -121,7 +121,7 @@ function unalign(infoSegment, alignedBuffer, blockSize) {
 }
 
 // finds unique blocks of current buffer segment, given a map of known blocks
-// params - (alignedBuffer: ArrayBuffer, uniqueBlockIds: Map<string, int>, blockSize: int)
+// params - alignedBuffer: ArrayBuffer, uniqueBlockIds: Map<string, int>, blockSize: int
 // returns - {newBlocks: Map<int, ArrayBuffer>, blockSequence: Array<int>}
 function deduplicate(alignedBuffer, uniqueBlockIds, blockSize) {
   const decoder = new TextDecoder();
@@ -147,13 +147,20 @@ function deduplicate(alignedBuffer, uniqueBlockIds, blockSize) {
   return { newBlocks, blockSequence };
 }
 
-// given known blocks and block sequence, reduplicates buffer
-// params - knownBlocks: Map<int, ArrayBuffer>, blockSequence: ArrayBuffer
-// returns - reduplicatedBuffer: ArrayBuffer
-function reduplicate() {}
+// given known blocks and block sequence, reduplicates aligned buffer
+// params - knownBlocks: Map<int, ArrayBuffer>, blockSequence: Array<int>
+// returns - alignedBuffer: ArrayBuffer
+function reduplicate(knownBlocks, blockSequence, blockSize) {
+  const alignedBufferSegment = new Uint8Array(blockSize * blockSequence.length);
+  for (let [i, blockId] of Array.entries(blockSequence)) {
+    alignedBufferSegment.set(knownBlocks.get(blockId), blockSize * i);
+  }
+  return alignedBufferSegment.buffer;
+}
 
-//
-//params - save
+// encodes an array of state buffers
+// params - savestateBuffers: Array<ArrayBuffer>
+// returns - MessagePack.encode(Array<obj>)
 function encodeSavestream(savestateBuffers) {
   const frames = [];
   const uniqueBlockIds = new Map();
@@ -179,4 +186,26 @@ function encodeSavestream(savestateBuffers) {
     frames.push(frame);
   }
   return MessagePack.encode(frames);
+}
+
+
+function decodeSavestream(encodedSavestreamBuffer) {
+  const frames = MessagePack.decode(encodedSavestreamBuffer);
+  const knownBlocks = new Map();
+  const savestateBuffers = [];
+  for (let frame of frames) {
+    const {header, infoSegment, blockSize, newBlocks, blockSequence} = frame;
+    for (let [k,v] of newBlocks.entries()) {
+      knownBlocks.set(k,v);
+    }
+    const alignedBufferSegment = reduplicate(knownBlocks, blockSequence, blockSize);
+    const bufferSegment = unalign(infoSegment, alignedBufferSegment, blockSize);
+    const savestateBuffer = repack({
+      header,
+      infoSegment,
+      bufferSegment
+    });
+    savestateBuffers.push(savestateBuffer);
+  }
+  return savestateBuffers;
 }

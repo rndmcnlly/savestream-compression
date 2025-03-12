@@ -23,7 +23,7 @@
         
         const savestateBuffers = [];
         
-        // TODO: try to sort the files in numerical order using the sequence number in the pattern "v86 state (x).bin"
+        // TODO: try to sort the files in numerical order using the sequence number in the pattern "v86state (x).bin"
         for (let i = 0; i < numHandles; i++) {
           const file = await handles[i].getFile();
           const buffer = await file.arrayBuffer();
@@ -31,6 +31,8 @@
         }
 
         const encodedSavestream = encodeSavestream(savestateBuffers);
+        const decodedSavestateBuffers = decodeSavestream(encodedSavestream);
+        debugger;
 
         let saveHandle = await window.showSaveFilePicker({
           startIn: "downloads",
