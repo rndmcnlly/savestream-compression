@@ -103,9 +103,9 @@ function repack(header, infoSegment, bufferSegment) {
   return fileContent.buffer;
 }
 
-// aligns buffer segment to an alignment of specified block size
+// aligns all buffers in buffer segment to an alignment of specified block size
 // params - (infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer, blockSize: int)
-// returns - fileContent
+// returns - alignedBuffer: arrayBuffer
 function align(infoSegment, bufferSegment, blockSize) {
   let decoder = new TextDecoder("utf-8");
   let info = JSON.parse(decoder.decode(infoSegment));
@@ -115,8 +115,19 @@ function align(infoSegment, bufferSegment, blockSize) {
     let offset = info.offset
     let length = info.length
     
+    // calculate padding to align length to blockSize
     let paddingLength = (blockSize - (length % blockSize)) % blockSize
+    
+    // extract raw block and create new array with padding
+    let rawBlock = new Uint8Array(bufferSegment, offset, length);
+    let expandedBlock = new Uint8Array(length + paddingLength);
+    expandedBlock.set(rawBlock);
+    
+    alignedBlocks.push(expandedBlock);
   }
+  
+  // concatenate all blocks into single array buffer
+  let totalSize = alignedBlocks.reduce((sum, block) => sum + block.length, 0)
 }
 
 function unalign() {
