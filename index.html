@@ -1,19 +1,9 @@
 <html>
   <head>
-    <style>
-      #report_area {
-        border: thin solid black;
-        border-radius: 1ex;
-        margin: 1ex;
-        padding: 1ex;
-      }
-    </style>
+    <style></style>
   </head>
   <body>
     <button id="load_files_button">load files</button>
-
-    <progress id="progress_bar" max="100" value="0"></progress>
-    <div id="report_area">Load files to see a report about them.</div>
 
     <script src="savestreams.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@msgpack/msgpack@3.0.0-beta3/dist.es5+umd/msgpack.min.js"></script>
@@ -26,56 +16,30 @@
 
         const reportArea = document.getElementById("report_area");
         const progressBar = document.getElementById("progress_bar");
-        reportArea.innerHTML = "";
 
-        const uniqueBlockIds = new Map();
         const fileReports = [];
         const numHandles = handles.length;
+
         
-        const frames = [];
+        const savestateBuffers = [];
         
+        // TODO: try to sort the files in numerical order using the sequence number in the pattern "v86 state (x).bin"
         for (let i = 0; i < numHandles; i++) {
-          const handle = handles[i];
-          let file = await handle.getFile();
-          let buffer = await file.arrayBuffer();  
-          
-          const {header, infoSegment, bufferSegment} = unpack(buffer);
-          const blockSize = 256;
-          const alignedBufferSegment = align(infoSegment, bufferSegment, blockSize);
-          const {newBlocks, blockSequence} = deduplicate(alignedBufferSegment, uniqueBlockIds, blockSize);
-          
-          const frame = {
-            header: new Uint8Array(header),
-            infoSegment: new Uint8Array(infoSegment),
-            blockSize,
-            newBlocks: Object.fromEntries(newBlocks),
-            blockSequence,
-          };
-          
-          frames.push(frame);
-          
-          fileReports.push({
-            name: file.name,
-          });
-          
-          progressBar.value = (100 * (i + 1)) / numHandles;
+          const file = await handles[i].getFile();
+          const buffer = await file.arrayBuffer();
+          savestateBuffers.push(buffer);
         }
-        
-        fileReports.forEach((report) => {
-          const div = document.createElement("div");
-          div.innerHTML = `${report.name}: ${JSON.stringify(report)}`;
-          reportArea.append(div);
-        });
+
+        const encodedSavestream = encodeSavestream(savestateBuffers);
 
         let saveHandle = await window.showSaveFilePicker({
           startIn: "downloads",
-          suggestedName: "last.savestream"
+          suggestedName: "last.savestream",
         });
         let writeableHandle = await saveHandle.createWritable();
-        await writeableHandle.write(MessagePack.encode(frames));
+        await writeableHandle.write(encodedSavestream);
         await writeableHandle.close();
       };
-      
     </script>
   </body>
 </html>

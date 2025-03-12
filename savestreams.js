@@ -1,3 +1,4 @@
+/* globals MessagePack */
 
 // unpacks an array buffer containing a v86 state into a header, info, and buffer segment
 // params - (fileContent: ArrayBuffer)
@@ -5,44 +6,49 @@
 function unpack(fileContent) {
   const blockStart = 16;
   const infoLenIndex = 3;
-  
+
   let header = fileContent.slice(0, blockStart);
-  
+
   // get infoLen from header
   let headerDV = new DataView(header);
   let infoLen = headerDV.getInt32(infoLenIndex * 4, true); // Set to true for little-endian, false for big-endian
-  
+
   let infoSegment = fileContent.slice(blockStart, blockStart + infoLen);
-  
+
   // align bufferOffset to the next multiple of 4 (32 bit = 4 bytes)
   let bufferOffset = blockStart + infoLen;
-  bufferOffset = bufferOffset + 3 & ~3;
-  
+  bufferOffset = (bufferOffset + 3) & ~3;
+
   let bufferSegment = fileContent.slice(bufferOffset);
-  
-  return {header, infoSegment, bufferSegment};
+
+  return { header, infoSegment, bufferSegment };
 }
 
 // takes in header, infoSegment, and bufferSegment and reconstructs original buffer
 // params - (header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer)
 // returns - fileContent: ArrayBuffer
-function repack({header, infoSegment, bufferSegment}) {
+function repack({ header, infoSegment, bufferSegment }) {
   // find padded info segment total length
   let infoLen = infoSegment.byteLength;
-  let padding = (infoLen + 3 & ~3) - infoLen;
-  
+  let padding = ((infoLen + 3) & ~3) - infoLen;
+
   // create new arraybuffer for paddedInfoSegment
   let paddedInfoSegment = new Uint8Array(infoLen + padding);
   paddedInfoSegment.set(new Uint8Array(infoSegment));
-  
+
   // create fileContent array buffer with total length of header, padderInfoSegment, and bufferSegment
-  let fileContent = new Uint8Array(header.byteLength + paddedInfoSegment.byteLength + bufferSegment.byteLength);
-  
+  let fileContent = new Uint8Array(
+    header.byteLength + paddedInfoSegment.byteLength + bufferSegment.byteLength
+  );
+
   // populate final buffer
   fileContent.set(new Uint8Array(header), 0);
   fileContent.set(paddedInfoSegment, header.byteLength);
-  fileContent.set(new Uint8Array(bufferSegment), header.byteLength + paddedInfoSegment.byteLength);
-  
+  fileContent.set(
+    new Uint8Array(bufferSegment),
+    header.byteLength + paddedInfoSegment.byteLength
+  );
+
   return fileContent.buffer;
 }
 
@@ -51,33 +57,33 @@ function repack({header, infoSegment, bufferSegment}) {
 // returns - alignedBuffer: arrayBuffer
 function align(infoSegment, bufferSegment, blockSize) {
   let info = JSON.parse(new TextDecoder("utf-8").decode(infoSegment));
-  
+
   let alignedBlocks = [];
-  for(let bufferInfo of info.buffer_infos) {
+  for (let bufferInfo of info.buffer_infos) {
     let offset = bufferInfo.offset;
     let length = bufferInfo.length;
-    
+
     // calculate padding to align length to blockSize
     let paddingLength = (blockSize - (length % blockSize)) % blockSize;
-    
+
     // extract raw block and create new array with padding
     let rawBlock = new Uint8Array(bufferSegment, offset, length);
     let expandedBlock = new Uint8Array(length + paddingLength);
     expandedBlock.set(rawBlock);
-    
+
     alignedBlocks.push(expandedBlock);
   }
-  
+
   // concatenate all blocks into single array buffer
   let totalSize = alignedBlocks.reduce((sum, block) => sum + block.length, 0);
   let alignedBuffer = new Uint8Array(totalSize);
-  
+
   let offset = 0;
-  for(let block of alignedBlocks) {
+  for (let block of alignedBlocks) {
     alignedBuffer.set(block, offset);
     offset += block.length;
   }
-  
+
   return alignedBuffer.buffer;
 }
 
@@ -86,31 +92,31 @@ function align(infoSegment, bufferSegment, blockSize) {
 // returns - bufferSegment: ArrayBuffer
 function unalign(infoSegment, alignedBuffer, blockSize) {
   let info = JSON.parse(new TextDecoder("utf-8").decode(infoSegment));
-  
+
   let unalignedBlocks = [];
   let offset = 0;
-  
-  for(let bufferInfo of info.buffer_infos) {
+
+  for (let bufferInfo of info.buffer_infos) {
     let length = bufferInfo.length;
     let paddingLength = (blockSize - (length % blockSize)) % blockSize;
-    
+
     // remove padding from aligned buffers
-    let rawBlock = new Uint8Array(alignedBuffer, offset, length + 3 & ~3);
-    
+    let rawBlock = new Uint8Array(alignedBuffer, offset, (length + 3) & ~3);
+
     offset += length + paddingLength;
     unalignedBlocks.push(rawBlock);
   }
-  
+
   //concatenate all blocks into single array buffer
   let totalSize = unalignedBlocks.reduce((sum, block) => sum + block.length, 0);
   let bufferSegment = new Uint8Array(totalSize);
-  
+
   let writeOffset = 0;
-  for(let block of unalignedBlocks) {
+  for (let block of unalignedBlocks) {
     bufferSegment.set(block, writeOffset);
     writeOffset += block.length;
   }
-  
+
   return bufferSegment.buffer;
 }
 
@@ -120,15 +126,15 @@ function unalign(infoSegment, alignedBuffer, blockSize) {
 function deduplicate(alignedBuffer, uniqueBlockIds, blockSize) {
   const decoder = new TextDecoder();
   const blockCount = Math.floor(alignedBuffer.byteLength / blockSize);
-  
+
   // keeps track of unique blocks from this state
   const newBlocks = new Map();
   const blockSequence = [];
-  
-  for(let i = 0; i < blockCount; i++) {
+
+  for (let i = 0; i < blockCount; i++) {
     const offset = i * blockSize;
     const block = new Uint8Array(alignedBuffer, offset, blockSize); // a view into the large buffer
-    
+
     const blockKey = decoder.decode(block);
     if (!uniqueBlockIds.has(blockKey)) {
       const id = uniqueBlockIds.size;
@@ -137,40 +143,40 @@ function deduplicate(alignedBuffer, uniqueBlockIds, blockSize) {
     }
     blockSequence.push(uniqueBlockIds.get(blockKey));
   }
-  
-  return {newBlocks, blockSequence};
+
+  return { newBlocks, blockSequence };
 }
 
 // given known blocks and block sequence, reduplicates buffer
-// params - (knownBlocks: Map<int, ArrayBuffer>, blockSequence: ArrayBuffer)
+// params - knownBlocks: Map<int, ArrayBuffer>, blockSequence: ArrayBuffer
 // returns - reduplicatedBuffer: ArrayBuffer
-function reduplicate() {
-  
-}
+function reduplicate() {}
 
-
-function findUniqueBlocks(arrayBuffer) {
-  const BLOCK_SIZE = 256;
-  const blockCount = Math.floor(arrayBuffer.byteLength / BLOCK_SIZE);
-
+//
+//params - save
+function encodeSavestream(savestateBuffers) {
+  const frames = [];
   const uniqueBlockIds = new Map();
-  const uniqueBlocks = [];
 
-  const blockSequence = [];
-  const decoder = new TextDecoder();
+  for (let buffer of savestateBuffers) {
+    const { header, infoSegment, bufferSegment } = unpack(buffer);
+    const blockSize = 256;
+    const alignedBufferSegment = align(infoSegment, bufferSegment, blockSize);
+    const { newBlocks, blockSequence } = deduplicate(
+      alignedBufferSegment,
+      uniqueBlockIds,
+      blockSize
+    );
 
-  for (let i = 0; i < blockCount; i++) {
-    const offset = i * BLOCK_SIZE;
+    const frame = {
+      header: new Uint8Array(header),
+      infoSegment: new Uint8Array(infoSegment),
+      blockSize,
+      newBlocks: Object.fromEntries(newBlocks),
+      blockSequence,
+    };
 
-    const block = new Uint8Array(arrayBuffer, offset, BLOCK_SIZE); // a view into the large buffer
-    const blockKey = decoder.decode(block);
-
-    if (!uniqueBlockIds.get(blockKey)) {
-      uniqueBlockIds.set(blockKey, uniqueBlockIds.size);
-      uniqueBlocks.push(block.slice()); // an independent copy
-    }
-    blockSequence.push(uniqueBlockIds.get(blockKey));
+    frames.push(frame);
   }
-
-  return { uniqueBlocks, blockSequence };
+  return MessagePack.encode(frames);
 }
