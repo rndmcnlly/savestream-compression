@@ -107,6 +107,9 @@ function repack(header, infoSegment, bufferSegment) {
 // params - (infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer, blockSize: int)
 // returns - fileContent
 function align(header, infoSegment, bufferSegment) {
+  let decoder = new TextDecoder("utf-8");
+  let info = JSON.parse(decoder.decode(infoSegment));
+  
   
 }
 
