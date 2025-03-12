@@ -146,22 +146,22 @@ function unalign(infoSegment, alignedBuffer, blockSize) {
   let decoder = new TextDecoder("utf-8");
   let info = JSON.parse(decoder.decode(infoSegment));
   
-  let unalignedBlocks = []
+  let unalignedBlocks = [];
   let offset = 0;
   
   for(let bufferInfo in info.buffer_infos) {
     let length = bufferInfo.length
-    let paddingLength = (blockSize - (length % blockSize)) % blockSize
+    let paddingLength = (blockSize - (length % blockSize)) % blockSize;
     
     // remove padding from aligned buffers
     let rawBlock = new Uint8Array(alignedBuffer, offset, length + 3 & ~3);
     
-    offset += length + paddingLength
-    unalignedBlocks.push(rawBlock)
+    offset += length + paddingLength;
+    unalignedBlocks.push(rawBlock);
   }
   
   //concatenate all blocks into single array buffer
-  let totalSize = unalignedBlocks.push()
+  let totalSize = unalignedBlocks.reduce((sum, block) => sum + block.length, 0);
 }
 
 function deduplicate() {
