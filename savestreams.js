@@ -186,8 +186,9 @@ function deduplicate(alignedBuffer, knownBlocks, blockSize) {
   
   for(let i = 0; i < blockCount; i++) {
     const offset = i * blockSize;
-    
     const block = new Uint8Array(alignedBuffer, offset, blockSize); // a view into the large buffer
+    
+    
     const blockKey = decoder.decode(block);
     
   }
