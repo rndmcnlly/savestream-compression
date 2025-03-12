@@ -110,13 +110,13 @@ function align(infoSegment, bufferSegment, blockSize) {
   let decoder = new TextDecoder("utf-8");
   let info = JSON.parse(decoder.decode(infoSegment));
   
-  let alignedBlocks = []
+  let alignedBlocks = [];
   for(let bufferInfo in info.buffer_infos) {
-    let offset = bufferInfo.offset
-    let length = bufferInfo.length
+    let offset = bufferInfo.offset;
+    let length = bufferInfo.length;
     
     // calculate padding to align length to blockSize
-    let paddingLength = (blockSize - (length % blockSize)) % blockSize
+    let paddingLength = (blockSize - (length % blockSize)) % blockSize;
     
     // extract raw block and create new array with padding
     let rawBlock = new Uint8Array(bufferSegment, offset, length);
@@ -133,7 +133,7 @@ function align(infoSegment, bufferSegment, blockSize) {
   let offset = 0;
   for(let block in alignedBlocks) {
     alignedBuffer.set(block, offset);
-    offset += block.length
+    offset += block.length;
   }
   
   return alignedBuffer.buffer;
@@ -141,7 +141,7 @@ function align(infoSegment, bufferSegment, blockSize) {
 
 // unaligns buffer segment to default alignment used by v86
 // params - (infoSegment: ArrayBuffer, alignedBuffer: ArrayBuffer, blockSize: int)
-// returns - unalignedBuffer: ArrayBuffer
+// returns - bufferSegment: ArrayBuffer
 function unalign(infoSegment, alignedBuffer, blockSize) {
   let decoder = new TextDecoder("utf-8");
   let info = JSON.parse(decoder.decode(infoSegment));
@@ -150,7 +150,7 @@ function unalign(infoSegment, alignedBuffer, blockSize) {
   let offset = 0;
   
   for(let bufferInfo in info.buffer_infos) {
-    let length = bufferInfo.length
+    let length = bufferInfo.length;
     let paddingLength = (blockSize - (length % blockSize)) % blockSize;
     
     // remove padding from aligned buffers
@@ -162,12 +162,27 @@ function unalign(infoSegment, alignedBuffer, blockSize) {
   
   //concatenate all blocks into single array buffer
   let totalSize = unalignedBlocks.reduce((sum, block) => sum + block.length, 0);
-}
-
-function deduplicate() {
+  let bufferSegment = new Uint8Array(totalSize);
   
+  let writeOffset = 0;
+  for(let block in unalignedBlocks) {
+    bufferSegment.set(block, writeOffset);
+    writeOffset += block.length;
+  }
+  
+  return bufferSegment.buffer;
 }
 
+// finds unique blocks of current buffer segment, given a map of known blocks
+// params - (alignedBuffer: ArrayBuffer, knownBlocks: Map<int, ArrayBuffer>, blockSize: int)
+// returns - {newBlocks: Map<int, ArrayBuffer>, blockSequence: Array<int>}
+function deduplicate() {
+  const blockCount = 
+}
+
+// given known blocks and block sequence, reduplicates buffer
+// params - (knownBlocks: Map<int, ArrayBuffer>, blockSequence: ArrayBuffer)
+// returns - reduplicatedBuffer: ArrayBuffer
 function reduplicate() {
   
 }
