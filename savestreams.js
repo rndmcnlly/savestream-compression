@@ -152,8 +152,9 @@ function deduplicate(alignedBuffer, uniqueBlockIds, blockSize) {
 // returns - alignedBuffer: ArrayBuffer
 function reduplicate(knownBlocks, blockSequence, blockSize) {
   const alignedBufferSegment = new Uint8Array(blockSize * blockSequence.length);
-  for (let [i, blockId] of Array.entries(blockSequence)) {
-    alignedBufferSegment.set(knownBlocks.get(blockId), blockSize * i);
+  for (let [i, blockId] of blockSequence.entries()) {
+    const block = knownBlocks.get(blockId.toString());
+    alignedBufferSegment.set(block, blockSize * i);
   }
   return alignedBufferSegment.buffer;
 }
@@ -195,7 +196,7 @@ function decodeSavestream(encodedSavestreamBuffer) {
   const savestateBuffers = [];
   for (let frame of frames) {
     const {header, infoSegment, blockSize, newBlocks, blockSequence} = frame;
-    for (let [k,v] of newBlocks.entries()) {
+    for (let [k,v] of Object.entries(newBlocks)) {
       knownBlocks.set(k,v);
     }
     const alignedBufferSegment = reduplicate(knownBlocks, blockSequence, blockSize);
