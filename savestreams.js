@@ -143,6 +143,10 @@ function align(infoSegment, bufferSegment, blockSize) {
 // params - (infoSegment: ArrayBuffer, alignedBuffer: ArrayBuffer, blockSize: int)
 // returns - unalignedBuffer: ArrayBuffer
 function unalign(infoSegment, alignedBuffer, blockSize) {
+  let decoder = new TextDecoder("utf-8");
+  let info = JSON.parse(decoder.decode(infoSegment));
+  
+  let unalignedBlocks = []
   
 }
 
