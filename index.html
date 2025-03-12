@@ -45,10 +45,10 @@
           const {newBlocks, blockSequence} = deduplicate(alignedBufferSegment, uniqueBlockIds, blockSize);
           
           const frame = {
-            header,
-            infoSegment,
+            header: new Uint8Array(header),
+            infoSegment: new Uint8Array(infoSegment),
             blockSize,
-            newBlocks,
+            newBlocks: Object.fromEntries(newBlocks),
             blockSequence,
           };
           
@@ -56,7 +56,6 @@
           
           fileReports.push({
             name: file.name,
-            length: MessagePack.encode(frame).length,
           });
           
           progressBar.value = (100 * (i + 1)) / numHandles;
@@ -73,7 +72,7 @@
           suggestedName: "last.savestream"
         });
         let writeableHandle = await saveHandle.createWritable();
-        await writeableHandle.write(new TextEncoder().encode("meow\n").buffer);
+        await writeableHandle.write(MessagePack.encode(frames));
         await writeableHandle.close();
       };
       
