@@ -122,20 +122,23 @@ function deduplicate(alignedBuffer, uniqueBlockIds, blockSize) {
   const blockCount = Math.floor(alignedBuffer.byteLength / blockSize);
   
   // keeps track of unique blocks from this state
-  const newBlockIds = new Map();
+  const newBlocks = new Map();
   const blockSequence = [];
   
   for(let i = 0; i < blockCount; i++) {
     const offset = i * blockSize;
     const block = new Uint8Array(alignedBuffer, offset, blockSize); // a view into the large buffer
     
-    
     const blockKey = decoder.decode(block);
     if (!uniqueBlockIds.has(blockKey)) {
-      let id = knownBlock
+      const id = uniqueBlockIds.size;
+      uniqueBlockIds.set(blockKey, id);
+      newBlocks.set(id, block.slice());
     }
-    
+    blockSequence.push(uniqueBlockIds.get(blockKey));
   }
+  
+  return {newBlocks, blockSequence};
 }
 
 // given known blocks and block sequence, reduplicates buffer

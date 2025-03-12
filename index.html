@@ -16,6 +16,7 @@
     <div id="report_area">Load files to see a report about them.</div>
 
     <script src="savestreams.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@msgpack/msgpack@3.0.0-beta3/dist.es5+umd/msgpack.min.js"></script>
     <script>
       let button = document.getElementById("load_files_button");
       button.onclick = async function () {
@@ -27,26 +28,36 @@
         const progressBar = document.getElementById("progress_bar");
         reportArea.innerHTML = "";
 
-        let allBlocks = new Map();
-        let fileReports = [];
-        let numHandles = handles.length;
+        const uniqueBlockIds = new Map();
+        const fileReports = [];
+        const numHandles = handles.length;
+        
+        const frames = [];
+        
         for (let i = 0; i < numHandles; i++) {
           const handle = handles[i];
           let file = await handle.getFile();
           let buffer = await file.arrayBuffer();  
           
           const {header, infoSegment, bufferSegment} = unpack(buffer);
-          const BLOCK_SIZE = 256;
-          const alignedBufferSegment = align(infoSegment, bufferSegment, BLOCK_SIZE);
-          const unalignedBufferSegment = unalign(infoSegment, alignedBufferSegment, BLOCK_SIZE);
-          console.log(bufferSegment.length, alignedBufferSegment.length, unalignedBufferSegment.length);
+          const blockSize = 256;
+          const alignedBufferSegment = align(infoSegment, bufferSegment, blockSize);
+          const {newBlocks, blockSequence} = deduplicate(alignedBufferSegment, uniqueBlockIds, blockSize);
           
+          const frame = {
+            header,
+            infoSegment,
+            blockSize,
+            newBlocks,
+            blockSequence,
+          };
+          
+          frames.push(frame);
           
           fileReports.push({
             name: file.name,
-            length: buffer.byteLength,
+            length: MessagePack.encode(frame).length,
           });
-    
           
           progressBar.value = (100 * (i + 1)) / numHandles;
         }
