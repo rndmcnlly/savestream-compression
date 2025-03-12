@@ -106,11 +106,12 @@ function repack(header, infoSegment, bufferSegment) {
 // aligns buffer block to an alignment of specified block size
 // params - (infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer, blockSize: int)
 // returns - fileContent
-function align(header, infoSegment, bufferSegment) {
+function align(infoSegment, bufferSegment, blockSize) {
   let decoder = new TextDecoder("utf-8");
   let info = JSON.parse(decoder.decode(infoSegment));
   
-  
+  let alignedBlocks = []
+  for(let infoBlock in info)
 }
 
 function unalign() {
