@@ -1,60 +1,3 @@
-let button = document.getElementById("load_files_button");
-
-button.onclick = async function () {
-  const handles = await window.showOpenFilePicker({
-    multiple: true,
-  });
-
-  // styling around file picker
-  const reportArea = document.getElementById("report_area");
-  const progressBar = document.getElementById("progress_bar");
-  reportArea.innerHTML = "";
-
-  let allBlocks = new Map();
-  let fileReports = [];
-  let numHandles = handles.length;
-  
-  // loop through each file
-  for (let i = 0; i < numHandles; i++) {
-    const handle = handles[i];
-    let file = await handle.getFile();
-    let buffer = await file.arrayBuffer();
-    let view32 = new Uint32Array(buffer);
-    let dataView = new DataView(buffer);
-    // let magic = dataView.getUint32(0);
-
-    let { uniqueBlocks, blockSequence } = findUniqueBlocks(buffer);
-
-    fileReports.push({
-      name: file.name,
-      length: buffer.byteLength,
-      blocks: blockSequence.length,
-    });
-
-    uniqueBlocks.forEach((block, index) => {
-      const blockKey = new TextDecoder().decode(block);
-      if(!allBlocks.has(blockKey)) {
-        allBlocks.set(blockKey, block);
-      }
-    });
-
-    progressBar.value = (100 * (i + 1)) / numHandles;
-  }
-
-  fileReports.forEach((report) => {
-    const div = document.createElement("div");
-    div.innerHTML = `${report.name}: ${JSON.stringify(report)}`;
-    reportArea.append(div);
-  });
-
-  let saveHandle = await window.showSaveFilePicker({
-    startIn: "downloads",
-    suggestedName: "last.savestream"
-  });
-  let writeableHandle = await saveHandle.createWritable();
-  await writeableHandle.write(new TextEncoder().encode("meow\n").buffer);
-  await writeableHandle.close();
-};
 
 // unpacks an array buffer containing a v86 state into a header, info, and buffer segment
 // params - (fileContent: ArrayBuffer)
@@ -83,7 +26,7 @@ function unpack(fileContent) {
 // takes in header, infoSegment, and bufferSegment and reconstructs original buffer
 // params - (header: ArrayBuffer, infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer)
 // returns - fileContent: ArrayBuffer
-function repack(header, infoSegment, bufferSegment) {
+function repack({header, infoSegment, bufferSegment}) {
   // find padded info segment total length
   let infoLen = infoSegment.byteLength;
   let padding = (infoLen + 3 & ~3) - infoLen;
