@@ -127,9 +127,21 @@ function align(infoSegment, bufferSegment, blockSize) {
   }
   
   // concatenate all blocks into single array buffer
-  let totalSize = alignedBlocks.reduce((sum, block) => sum + block.length, 0)
+  let totalSize = alignedBlocks.reduce((sum, block) => sum + block.length, 0);
+  let alignedBuffer = new Uint8Array(totalSize);
+  
+  let offset = 0;
+  for(let block in alignedBlocks) {
+    alignedBuffer.set(block, offset);
+    offset += block.length
+  }
+  
+  return alignedBuffer.buffer;
 }
 
+// unaligns buffer segment to default alignment used by v86
+// params - 
+// returns - 
 function unalign() {
   
 }
