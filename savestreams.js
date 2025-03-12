@@ -154,8 +154,14 @@ function unalign(infoSegment, alignedBuffer, blockSize) {
     let paddingLength = (blockSize - (length % blockSize)) % blockSize
     
     // remove padding from aligned buffers
-    let rawBlock = new Uint8Array(alignedBuffer, offset, length + 3 & ~3)
+    let rawBlock = new Uint8Array(alignedBuffer, offset, length + 3 & ~3);
+    
+    offset += length + paddingLength
+    unalignedBlocks.push(rawBlock)
   }
+  
+  //concatenate all blocks into single array buffer
+  let totalSize = unalignedBlocks.push()
 }
 
 function deduplicate() {
