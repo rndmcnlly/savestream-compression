@@ -50,11 +50,10 @@ function repack({header, infoSegment, bufferSegment}) {
 // params - (infoSegment: ArrayBuffer, bufferSegment: ArrayBuffer, blockSize: int)
 // returns - alignedBuffer: arrayBuffer
 function align(infoSegment, bufferSegment, blockSize) {
-  let decoder = new TextDecoder("utf-8");
-  let info = JSON.parse(decoder.decode(infoSegment));
+  let info = JSON.parse(new TextDecoder("utf-8").decode(infoSegment));
   
   let alignedBlocks = [];
-  for(let bufferInfo in info.buffer_infos) {
+  for(let bufferInfo of info.buffer_infos) {
     let offset = bufferInfo.offset;
     let length = bufferInfo.length;
     
@@ -74,7 +73,7 @@ function align(infoSegment, bufferSegment, blockSize) {
   let alignedBuffer = new Uint8Array(totalSize);
   
   let offset = 0;
-  for(let block in alignedBlocks) {
+  for(let block of alignedBlocks) {
     alignedBuffer.set(block, offset);
     offset += block.length;
   }
@@ -86,13 +85,12 @@ function align(infoSegment, bufferSegment, blockSize) {
 // params - (infoSegment: ArrayBuffer, alignedBuffer: ArrayBuffer, blockSize: int)
 // returns - bufferSegment: ArrayBuffer
 function unalign(infoSegment, alignedBuffer, blockSize) {
-  let decoder = new TextDecoder("utf-8");
-  let info = JSON.parse(decoder.decode(infoSegment));
+  let info = JSON.parse(new TextDecoder("utf-8").decode(infoSegment));
   
   let unalignedBlocks = [];
   let offset = 0;
   
-  for(let bufferInfo in info.buffer_infos) {
+  for(let bufferInfo of info.buffer_infos) {
     let length = bufferInfo.length;
     let paddingLength = (blockSize - (length % blockSize)) % blockSize;
     
@@ -108,7 +106,7 @@ function unalign(infoSegment, alignedBuffer, blockSize) {
   let bufferSegment = new Uint8Array(totalSize);
   
   let writeOffset = 0;
-  for(let block in unalignedBlocks) {
+  for(let block of unalignedBlocks) {
     bufferSegment.set(block, writeOffset);
     writeOffset += block.length;
   }
@@ -117,14 +115,14 @@ function unalign(infoSegment, alignedBuffer, blockSize) {
 }
 
 // finds unique blocks of current buffer segment, given a map of known blocks
-// params - (alignedBuffer: ArrayBuffer, knownBlocks: Map<int, ArrayBuffer>, blockSize: int)
+// params - (alignedBuffer: ArrayBuffer, uniqueBlockIds: Map<string, int>, blockSize: int)
 // returns - {newBlocks: Map<int, ArrayBuffer>, blockSequence: Array<int>}
-function deduplicate(alignedBuffer, knownBlocks, blockSize) {
+function deduplicate(alignedBuffer, uniqueBlockIds, blockSize) {
   const decoder = new TextDecoder();
   const blockCount = Math.floor(alignedBuffer.byteLength / blockSize);
   
   // keeps track of unique blocks from this state
-  const newBlocks = new Map()
+  const newBlockIds = new Map();
   const blockSequence = [];
   
   for(let i = 0; i < blockCount; i++) {
@@ -133,6 +131,9 @@ function deduplicate(alignedBuffer, knownBlocks, blockSize) {
     
     
     const blockKey = decoder.decode(block);
+    if (!uniqueBlockIds.has(blockKey)) {
+      let id = knownBlock
+    }
     
   }
 }
