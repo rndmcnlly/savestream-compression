@@ -140,9 +140,9 @@ function align(infoSegment, bufferSegment, blockSize) {
 }
 
 // unaligns buffer segment to default alignment used by v86
-// params - (infoSegment: ArrayBuffer, alignedBuffer: ArrayBuffer, blockSize)
+// params - (infoSegment: ArrayBuffer, alignedBuffer: ArrayBuffer, blockSize: int)
 // returns - unalignedBuffer: ArrayBuffer
-function unalign(infoSegment) {
+function unalign(infoSegment, alignedBuffer, blockSize) {
   
 }
 
