@@ -111,9 +111,9 @@ function align(infoSegment, bufferSegment, blockSize) {
   let info = JSON.parse(decoder.decode(infoSegment));
   
   let alignedBlocks = []
-  for(let infoBlock in info.buffer_infos) {
-    let offset = info.offset
-    let length = info.length
+  for(let bufferInfo in info.buffer_infos) {
+    let offset = bufferInfo.offset
+    let length = bufferInfo.length
     
     // calculate padding to align length to blockSize
     let paddingLength = (blockSize - (length % blockSize)) % blockSize
@@ -147,7 +147,15 @@ function unalign(infoSegment, alignedBuffer, blockSize) {
   let info = JSON.parse(decoder.decode(infoSegment));
   
   let unalignedBlocks = []
+  let offset = 0;
   
+  for(let bufferInfo in info.buffer_infos) {
+    let length = bufferInfo.length
+    let paddingLength = (blockSize - (length % blockSize)) % blockSize
+    
+    // remove padding from aligned buffers
+    let rawBlock = new Uint8Array(alignedBuffer, offset, length + 3 & ~3)
+  }
 }
 
 function deduplicate() {
