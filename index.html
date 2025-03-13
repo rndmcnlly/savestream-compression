@@ -13,6 +13,16 @@
         const handles = await window.showOpenFilePicker({
           multiple: true,
         });
+        // sort handles
+        handles.sort((a, b) => {
+          const fileNameA = a.name;
+          const fileNameB = b.name;
+          const numA = parseInt(fileNameA.match(/\((\d+)\)/)[1], 10);
+          const numB = parseInt(fileNameB.match(/\((\d+)\)/)[1], 10);
+          
+          return numA - numB;
+        })
+        debugger;
 
         const reportArea = document.getElementById("report_area");
         const progressBar = document.getElementById("progress_bar");
