@@ -10,7 +10,7 @@
         padding: 20px;
       }
 
-/*       .copy-box {
+      .copy-box {
         background: white;
         padding: 20px;
         border-radius: 12px;
@@ -21,7 +21,7 @@
       }
 
       .copy-text {
-        font-size: 16px;
+        font-size: 14px;
         user-select: all;
         word-break: break-word;
         background: #f4f4f4;
@@ -30,7 +30,7 @@
         display: block;
         text-align: left;
         font-family: monospace;
-      } */
+      }
 
       .copy-btn {
         margin-top: 10px;
@@ -64,7 +64,6 @@
         async () =&gt; { console.log("clicked record savestream"); const dir =
         dir = await navigator.storage.getDirectory(); }; })();
       </code>
-      <br>
       <button class="copy-btn" onclick="copyText()">Copy</button>
     </div>
 
@@ -81,7 +80,7 @@
         document.execCommand("copy");
         selection.removeAllRanges();
 
-        alert("Text copied!");
+        alert("Code copied!");
       }
     </script>
   </body>
