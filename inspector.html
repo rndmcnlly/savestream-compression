@@ -1,6 +1,12 @@
 <html>
   <head>
-    <style></style>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        padding: 20px;
+      }
+    </style>
   </head>
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
@@ -13,8 +19,18 @@
       Inspector
       </h1></header>
     <div id="chart"></div> <!-- This is where the chart will be embedded -->
-
+    <p>give me your .savestream file!</p>
+    <button id="load_files_button">load .savestream file</button>
     <script>
+      button.onclick = async function () {
+        const handle = await window.showOpenFilePicker({
+          multiple: false,
+        });
+
+        const file = await handle[0].getFile();
+        const contents = await file.arrayBuffer();
+        const savestateBuffers = decodeSavestream(contents);
+      }
         // Define the Vega-Lite specification (a simple bar chart)
         const spec = {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
