@@ -2,37 +2,85 @@
   <head>
     <style>
       code {
-        font-family: Consolas,"courier new", monospace;
+        font-family: Consolas, "courier new", monospace;
         color: crimson;
         background-color: #f1f1f1;
         padding: 2px;
         font-size: 105%;
+        
+        .copy-box {
+            background: #f1f1f1;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+
+        .copy-text {
+            font-size: 16px;
+            user-select: all;
+            word-break: break-word;
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #0056b3;
+        }
       }
     </style>
   </head>
   <body>
-    <p>
-      welcome. click the links if you dare 😈
-    </p>
+    <p>welcome. click the links if you dare 😈</p>
     <a href="/encoder.html">encoder</a>
     <a href="/decoder.html">decoder</a>
     <a href="/inspector.html">inspector</a>
-    
-    <p>
-      do you want to save states in real time? use this bookmarklet below! 
-    </p>
-    <code>javascript:(function() {
-	const runtimeOptions = document.getElementById("runtime_options");
-	const recordButton = document.createElement("button");
 
-	runtimeOptions.append(recordButton);
-	recordButton.innerHTML = "record savestream";
-	recordButton.onclick = async () => {
-		console.log("clicked record savestream");
-		const dir = dir = await navigator.storage.getDirectory();
-	};
-})();
-</code>
-    
+    <p>do you want to save states in real time? use this bookmarklet below!</p>
+    <div class="copy-box">
+      <code>
+        javascript:(function() { const runtimeOptions =
+        document.getElementById("runtime_options"); const recordButton =
+        document.createElement("button"); runtimeOptions.append(recordButton);
+        recordButton.innerHTML = "record savestream"; recordButton.onclick =
+        async () =&gt; { console.log("clicked record savestream"); const dir = dir
+        = await navigator.storage.getDirectory(); }; })();
+      </code>
+    </div>
+
+    <div class="copy-box">
+      <div class="copy-text" id="copyContent">
+        This is the text that can be copied by clicking the button below.
+      </div>
+      <button class="copy-btn" onclick="copyText()">Copy</button>
+    </div>
+
+    <script>
+      function copyText() {
+        const textElement = document.getElementById("copyContent");
+        const range = document.createRange();
+        const selection = window.getSelection();
+
+        range.selectNodeContents(textElement);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        document.execCommand("copy");
+        selection.removeAllRanges();
+
+        alert("Text copied!");
+      }
+    </script>
   </body>
 </html>
