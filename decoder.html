@@ -6,6 +6,36 @@
     <style></style>
   </head>
   <body>
+    <p>
+      give me your .savestream file!
+    </p>
     
+    <script>
+      let button = document.getElementById("load_files_button");
+      button.onclick = async function () {
+        const handle = await window.showOpenFilePicker({
+          multiple: false,
+        });
+
+        const savestateBuffers = [];
+        
+        // loop through all savestate buffers
+        for (let i = 0; i < numHandles; i++) {
+          const file = await handles[i].getFile();
+          const buffer = await file.arrayBuffer();
+          savestateBuffers.push(buffer);
+        }
+        
+        const encodedSavestream = encodeSavestream(savestateBuffers);
+
+        let saveHandle = await window.showSaveFilePicker({
+          startIn: "downloads",
+          suggestedName: "last.savestream",
+        });
+        let writeableHandle = await saveHandle.createWritable();
+        await writeableHandle.write(encodedSavestream);
+        await writeableHandle.close();
+      };
+    </script>
   </body>
 </html>
