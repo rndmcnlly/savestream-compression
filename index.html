@@ -13,7 +13,8 @@
         const handles = await window.showOpenFilePicker({
           multiple: true,
         });
-        // sort handles
+        
+        // sort handles in numerical order - assumes files are named "v86state (x).bin"
         handles.sort((a, b) => {
           const fileNameA = a.name;
           const fileNameB = b.name;
@@ -22,7 +23,6 @@
           
           return numA - numB;
         })
-        debugger;
 
         const reportArea = document.getElementById("report_area");
         const progressBar = document.getElementById("progress_bar");
@@ -33,7 +33,6 @@
         
         const savestateBuffers = [];
         
-        // TODO: try to sort the files in numerical order using the sequence number in the pattern "v86state (x).bin"
         
         for (let i = 0; i < numHandles; i++) {
           const file = await handles[i].getFile();
@@ -43,7 +42,6 @@
 
         const encodedSavestream = encodeSavestream(savestateBuffers);
         const decodedSavestateBuffers = decodeSavestream(encodedSavestream);
-        debugger;
 
         let saveHandle = await window.showSaveFilePicker({
           startIn: "downloads",
