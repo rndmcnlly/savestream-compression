@@ -1,6 +1,14 @@
 <html>
   <head>
-    <style></style>
+    <style>
+      code {
+        font-family: Consolas,"courier new", monospace;
+        color: crimson;
+        background-color: #f1f1f1;
+        padding: 2px;
+        font-size: 105%;
+      }
+    </style>
   </head>
   <body>
     <p>
@@ -9,6 +17,22 @@
     <a href="/encoder.html">encoder</a>
     <a href="/decoder.html">decoder</a>
     <a href="/inspector.html">inspector</a>
+    
+    <p>
+      do you want to save states in real time? use this bookmarklet below! 
+    </p>
+    <code>javascript:(function() {
+	const runtimeOptions = document.getElementById("runtime_options");
+	const recordButton = document.createElement("button");
+
+	runtimeOptions.append(recordButton);
+	recordButton.innerHTML = "record savestream";
+	recordButton.onclick = async () => {
+		console.log("clicked record savestream");
+		const dir = dir = await navigator.storage.getDirectory();
+	};
+})();
+</code>
     
   </body>
 </html>
