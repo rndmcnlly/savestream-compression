@@ -2,9 +2,41 @@
   <head>
     <style></style>
   </head>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
   <body>
     <p>
       oh no... there is nothing here yet. :( come back later!
     </p>
+    <h2>My Vega-Lite Chart</h2>
+    <div id="chart"></div> <!-- This is where the chart will be embedded -->
+
+    <script>
+        // Define the Vega-Lite specification (a simple bar chart)
+        const spec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "description": "A simple bar chart showing data values.",
+            "data": {
+                "values": [
+                    {"category": "A", "value": 30},
+                    {"category": "B", "value": 80},
+                    {"category": "C", "value": 45},
+                    {"category": "D", "value": 60},
+                    {"category": "E", "value": 20}
+                ]
+            },
+            "mark": "bar",
+            "encoding": {
+                "x": {"field": "category", "type": "ordinal"},
+                "y": {"field": "value", "type": "quantitative"}
+            }
+        };
+
+        // Render the chart into the div with id "chart"
+        vegaEmbed("#chart", spec)
+            .then(result => console.log("Chart rendered"))
+            .catch(console.error);
+    </script>
   </body>
 </html>
