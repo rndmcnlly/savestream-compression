@@ -8,29 +8,56 @@
   </head>
   <body>
     <header>Decoder</header>
-    <p>
-      give me your .savestream file!
-    </p>
+    <p>give me your .savestream file!</p>
     <button id="load_files_button">load .savestream file</button>
-    
+
     <script>
       let button = document.getElementById("load_files_button");
       button.onclick = async function () {
         const handle = await window.showOpenFilePicker({
           multiple: false,
         });
-      
-        const file = await handle[0].getFile()
-        const contentse = await file.arrayBuffer()
-        const savestateBuffers = decodeSavestream(contents)
 
-        let saveHandle = await window.showSaveFilePicker({
-          startIn: "downloads",
-          suggestedName: "last.savestream",
-        });
-        let writeableHandle = await saveHandle.createWritable();
-        await writeableHandle.write(encodedSavestream);
-        await writeableHandle.close();
+        const file = await handle[0].getFile();
+        const contents = await file.arrayBuffer();
+        const savestateBuffers = decodeSavestream(contents);
+
+        try {
+          // Create a new JSZip instance
+          const zip = new JSZip();
+
+          // Add each file to the zip
+          savestateBuffers.forEach((fileData, index) => {
+            // Convert the binary data to a Blob and add it to the zip
+            zip.file(
+              `v86state \(${index + 1}\).bin`,
+              new Blob([fileData], { type: "application/octet-stream" })
+            );
+          });
+
+          // Generate the zip file as a Blob
+          const zipBlob = await zip.generateAsync({ type: "blob" });
+
+          // Prompt the user to save the zip file using showSaveFilePicker
+          const fileHandle = await showSaveFilePicker({
+            suggestedName: "files.zip",
+            types: [
+              {
+                description: "ZIP Files",
+                accept: { "application/zip": [".zip"] },
+              },
+            ],
+          });
+
+          // Create a writable stream to save the zip Blob
+          const writableStream = await fileHandle.createWritable();
+          await writableStream.write(zipBlob);
+          await writableStream.close();
+
+          console.log("ZIP file saved successfully!");
+        } catch (err) {
+          console.error("Error creating or saving the ZIP file:", err);
+        }
       };
     </script>
   </body>
