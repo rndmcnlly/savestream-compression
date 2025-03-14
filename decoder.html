@@ -3,12 +3,15 @@
     <title>Decoder</title>
     <script src="savestreams.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@msgpack/msgpack@3.0.0-beta3/dist.es5+umd/msgpack.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.8.0/jszip.min.js"></script>
     <style></style>
   </head>
   <body>
+    <header>Decoder</header>
     <p>
       give me your .savestream file!
     </p>
+    <button id="load_files_button">load .savestream file</button>
     
     <script>
       let button = document.getElementById("load_files_button");
@@ -16,17 +19,10 @@
         const handle = await window.showOpenFilePicker({
           multiple: false,
         });
-
-        const savestateBuffers = [];
-        
-        // loop through all savestate buffers
-        for (let i = 0; i < numHandles; i++) {
-          const file = await handles[i].getFile();
-          const buffer = await file.arrayBuffer();
-          savestateBuffers.push(buffer);
-        }
-        
-        const encodedSavestream = encodeSavestream(savestateBuffers);
+      
+        const file = await handle[0].getFile()
+        const contentse = await file.arrayBuffer()
+        const savestateBuffers = decodeSavestream(contents)
 
         let saveHandle = await window.showSaveFilePicker({
           startIn: "downloads",
