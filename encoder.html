@@ -7,8 +7,10 @@
   </head>
   <body>
     <header>Encoder</header>
+    <p>
+      Make sure ALL files are named in this format "v86state (x).bin".
+    </p>
     <button id="load_files_button">load files</button>
-    
     
     <script>
       let button = document.getElementById("load_files_button");
@@ -27,15 +29,10 @@
           return numA - numB;
         })
 
-        //
-        const reportArea = document.getElementById("report_area");
-        const progressBar = document.getElementById("progress_bar");
-
-        const fileReports = [];
         const numHandles = handles.length;
-
-        
         const savestateBuffers = [];
+        
+        // loop through all savestate buffers
         for (let i = 0; i < numHandles; i++) {
           const file = await handles[i].getFile();
           const buffer = await file.arrayBuffer();

@@ -8,52 +8,5 @@
     <a href="/decoder.html">decoder</a>
     <a href="/inspector.html">inspector</a>
     
-    <script src="savestreams.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@msgpack/msgpack@3.0.0-beta3/dist.es5+umd/msgpack.min.js"></script>
-    <script>
-      let button = document.getElementById("load_files_button");
-      button.onclick = async function () {
-        const handles = await window.showOpenFilePicker({
-          multiple: true,
-        });
-        
-        // sort handles in numerical order - assumes files are named "v86state (x).bin"
-        handles.sort((a, b) => {
-          const fileNameA = a.name;
-          const fileNameB = b.name;
-          const numA = parseInt(fileNameA.match(/\((\d+)\)/)[1], 10);
-          const numB = parseInt(fileNameB.match(/\((\d+)\)/)[1], 10);
-          
-          return numA - numB;
-        })
-
-        const reportArea = document.getElementById("report_area");
-        const progressBar = document.getElementById("progress_bar");
-
-        const fileReports = [];
-        const numHandles = handles.length;
-
-        
-        const savestateBuffers = [];
-        
-        
-        for (let i = 0; i < numHandles; i++) {
-          const file = await handles[i].getFile();
-          const buffer = await file.arrayBuffer();
-          savestateBuffers.push(buffer);
-        }
-
-        const encodedSavestream = encodeSavestream(savestateBuffers);
-        const decodedSavestateBuffers = decodeSavestream(encodedSavestream);
-
-        let saveHandle = await window.showSaveFilePicker({
-          startIn: "downloads",
-          suggestedName: "last.savestream",
-        });
-        let writeableHandle = await saveHandle.createWritable();
-        await writeableHandle.write(encodedSavestream);
-        await writeableHandle.close();
-      };
-    </script>
   </body>
 </html>
