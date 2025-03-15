@@ -1,8 +1,7 @@
 <html>
   <head>
     <style>
-      code{
-        
+      code {
       }
       body {
         font-family: Arial, sans-serif;
@@ -49,12 +48,15 @@
     </style>
   </head>
   <body>
-    <p>welcome. click the links if you dare 😈</p>
+    <h1>Welcome to the Savestreams Project!</h1>
     <a href="/encoder.html">encoder</a>
     <a href="/decoder.html">decoder</a>
     <a href="/inspector.html">inspector</a>
 
-    <p>do you want to save states in real time? use this bookmarklet below! (doesnt actually work currently) </p>
+    <p>
+      do you want to save states in real time? use this bookmarklet below!
+      (doesnt actually work currently)
+    </p>
     <div class="copy-box">
       <code class="copy-text" id="copyContent">
         javascript:(function() { const runtimeOptions =
@@ -68,6 +70,15 @@
     </div>
 
     <script>
+      function tempButton() {
+        const runtimeOptions = document.getElementById("runtime_options");
+        const recordButton = document.createElement("button");
+        runtimeOptions.append(recordButton);
+        recordButton.innerHTML = "record savestream";
+        recordButton.onclick = async() => {
+          console.log("clicked record savestream");
+        }
+      }
       function copyText() {
         const textElement = document.getElementById("copyContent");
         const range = document.createRange();
