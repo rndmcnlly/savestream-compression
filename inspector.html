@@ -74,15 +74,16 @@
                     "title": "Frame ID" 
                 },
                 "xOffset": { 
-                    "field": "segment", // This keeps bars independent (not stacked)
+                    "field": "segment",
                     "type": "nominal" 
                 },
                 "y": { 
                     "field": "size", 
                     "type": "quantitative", 
                     "title": "Segment Size in Bytes",
-                    "scale": {"type": "log"}
+                    "scale": {"type": "symlog", "constant": 100,  // Adjust this value for better spacing}
                 },
+                y2: { value: 1 },
                 "color": { 
                     "field": "segment", 
                     "type": "nominal", 
