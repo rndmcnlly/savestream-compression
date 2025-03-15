@@ -197,16 +197,20 @@ function decodeSavestream(encodedSavestreamBuffer) {
   const knownBlocks = new Map();
   const savestateBuffers = [];
   for (let frame of frames) {
-    const {header, infoSegment, blockSize, newBlocks, blockSequence} = frame;
-    for (let [k,v] of Object.entries(newBlocks)) {
-      knownBlocks.set(k,v);
+    const { header, infoSegment, blockSize, newBlocks, blockSequence } = frame;
+    for (let [k, v] of Object.entries(newBlocks)) {
+      knownBlocks.set(k, v);
     }
-    const alignedBufferSegment = reduplicate(knownBlocks, blockSequence, blockSize);
+    const alignedBufferSegment = reduplicate(
+      knownBlocks,
+      blockSequence,
+      blockSize
+    );
     const bufferSegment = unalign(infoSegment, alignedBufferSegment, blockSize);
     const savestateBuffer = repack({
       header,
       infoSegment,
-      bufferSegment
+      bufferSegment,
     });
     savestateBuffers.push(savestateBuffer);
   }
