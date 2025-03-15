@@ -44,15 +44,6 @@
         const contents = await file.arrayBuffer();
         const frames = MessagePack.decode(contents);
         
-        for (let frame of frames) {
-        let tempNB = MessagePack.encode(frame.newBlocks).byteLength
-        let tempH = MessagePack.encode(frame.header).byteLength
-        let tempIS = MessagePack.encode(frame.infoSegment).byteLength
-        let tempBS = MessagePack.encode(frame.blockSequence).byteLength
-        console.log(tempNB, tempH, tempIS, tempBS)
-        }
-
-        
         const transformedData = frames.flatMap((obj, index) => [
           { segment: "header", size: MessagePack.encode(obj.header).byteLength, object_id: `Frame ${index + 1}` },
           { segment: "infoSegment", size: MessagePack.encode(obj.infoSegment).byteLength, object_id: `Frame ${index + 1}` },
