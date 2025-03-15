@@ -76,7 +76,10 @@
         runtimeOptions.append(recordButton);
         recordButton.innerHTML = "record savestream";
         recordButton.onclick = async() => {
-          console.log("clicked record savestream");
+          console.warn("clicked record savestream");
+          recordButton.innerHTML = "stop recording"
+          
+          
         }
       }
       function copyText() {
