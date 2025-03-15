@@ -28,41 +28,16 @@
         const file = await handle[0].getFile();
         const contents = await file.arrayBuffer();
         const frames = MessagePack.decode(contents);
-        
-        const transformedData = rawData.flatMap((obj, index) => [
-          { segment: "header", size: obj.header.length, object_id: `Object ${index + 1}` },
-          { segment: "infoSegment", size: obj.infoSegment.length, object_id: `Object ${index + 1}` },
-          { segment: "newBlocks", size: obj.newBlocks.length * obj.blockSize, object_id: `Object ${index + 1}` },
-          { segment: "blockSequence", size: obj.blockSequence.length}
-        ])
+        let temp = frames[0].newBlocks.length;
         debugger;
-      }
-        // Sample data: Array of objects
-        const rawData = [
-            {
-                header: new Uint8Array(50),
-                infoSegment: new Uint8Array(80),
-                blockSize: 10,
-                newBlocks: [new Uint8Array(10), new Uint8Array(10), new Uint8Array(10)], 
-                blockSequence: [1, 2, 3, 4]
-            },
-            {
-                header: new Uint8Array(30),
-                infoSegment: new Uint8Array(60),
-                blockSize: 8,
-                newBlocks: [new Uint8Array(8), new Uint8Array(8)], 
-                blockSequence: [1, 2, 3]
-            }
-        ];
-
-        // Transform rawData into an array suitable for Vega-Lite
-        const transformedData = rawData.flatMap((obj, index) => [
-            { segment: "header", size: obj.header.length, object_id: `Object ${index + 1}` },
-            { segment: "infoSegment", size: obj.infoSegment.length, object_id: `Object ${index + 1}` },
-            { segment: "newBlocks", size: obj.newBlocks.length * obj.blockSize, object_id: `Object ${index + 1}` },
-            { segment: "blockSequence", size: obj.blockSequence.length * obj.blockSize, object_id: `Object ${index + 1}` }
+        
+        const transformedData = frames.flatMap((obj, index) => [
+          { segment: "header", size: obj.header.bytelength, object_id: `Object ${index + 1}` },
+          { segment: "infoSegment", size: obj.infoSegment.bytelength, object_id: `Object ${index + 1}` },
+          { segment: "newBlocks", size: obj.newBlocks.length * obj.blockSize, object_id: `Object ${index + 1}` },
+          { segment: "blockSequence", size: obj.blockSequence.length * obj.blockSize, object_id: `Object ${index + 1}` }
         ]);
-
+        
         // Vega-Lite chart specification
         const spec = {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -96,6 +71,7 @@
 
         // Render Vega-Lite chart
         vegaEmbed("#chart", spec);
+      };
     </script>
   </body>
 </html>
