@@ -28,14 +28,15 @@
         const file = await handle[0].getFile();
         const contents = await file.arrayBuffer();
         const frames = MessagePack.decode(contents);
-        let temp = frames[0].newBlocks.length;
+        let temp = MessagePack.encode(frames[0].newBlocks).byteLength;
+        
         debugger;
         
         const transformedData = frames.flatMap((obj, index) => [
-          { segment: "header", size: MessagePack.encode(obj.header).bytelength, object_id: `Object ${index + 1}` },
-          { segment: "infoSegment", size: MessagePack.encode(obj.infoSegment).bytelength, object_id: `Object ${index + 1}` },
-          { segment: "newBlocks", size: MessagePack.encode(obj.newBlocks).bytelength, object_id: `Object ${index + 1}` },
-          { segment: "blockSequence", size: MessagePack.encode(obj.blockSequence).bytelength, object_id: `Object ${index + 1}` }
+          { segment: "header", size: MessagePack.encode(obj.header).byteLength, object_id: `Object ${index + 1}` },
+          { segment: "infoSegment", size: MessagePack.encode(obj.infoSegment).byteLength, object_id: `Object ${index + 1}` },
+          { segment: "newBlocks", size: MessagePack.encode(obj.newBlocks).byteLength, object_id: `Object ${index + 1}` },
+          { segment: "blockSequence", size: MessagePack.encode(obj.blockSequence).byteLength, object_id: `Object ${index + 1}` }
         ]);
         
         // Vega-Lite chart specification
@@ -58,7 +59,8 @@
                 "y": { 
                     "field": "size", 
                     "type": "quantitative", 
-                    "title": "Segment Size" 
+                    "title": "Segment Size",
+                    "scale": { "type": "log", "domain": [1, "max"]}
                 },
                 "color": { 
                     "field": "segment", 
