@@ -14,13 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
   <body>
-    <p>
-      oh no... there is nothing here yet. :( come back later!
-    </p>
-    <header><h1>
-      Inspector
-      </h1></header>
-    <div id="chart"></div> <!-- This is where the chart will be embedded -->
+    <header>Inspector</header>
     <p>give me your .savestream file!</p>
     <button id="load_files_button">load .savestream file</button>
     <script>
@@ -33,7 +27,6 @@
         const file = await handle[0].getFile();
         const contents = await file.arrayBuffer();
         const frames = MessagePack.decode(contents);
-        
         debugger;
       }
 
