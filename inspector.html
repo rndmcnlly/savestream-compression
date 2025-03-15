@@ -32,10 +32,10 @@
         debugger;
         
         const transformedData = frames.flatMap((obj, index) => [
-          { segment: "header", size: obj.header.bytelength, object_id: `Object ${index + 1}` },
-          { segment: "infoSegment", size: obj.infoSegment.bytelength, object_id: `Object ${index + 1}` },
-          { segment: "newBlocks", size: obj.newBlocks.length * obj.blockSize, object_id: `Object ${index + 1}` },
-          { segment: "blockSequence", size: obj.blockSequence.length * obj.blockSize, object_id: `Object ${index + 1}` }
+          { segment: "header", size: MessagePack.encode(obj.header).bytelength, object_id: `Object ${index + 1}` },
+          { segment: "infoSegment", size: MessagePack.encode(obj.infoSegment).bytelength, object_id: `Object ${index + 1}` },
+          { segment: "newBlocks", size: MessagePack.encode(obj.newBlocks).bytelength, object_id: `Object ${index + 1}` },
+          { segment: "blockSequence", size: MessagePack.encode(obj.blockSequence).bytelength, object_id: `Object ${index + 1}` }
         ]);
         
         // Vega-Lite chart specification
