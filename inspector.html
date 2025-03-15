@@ -43,10 +43,14 @@
         const file = await handle[0].getFile();
         const contents = await file.arrayBuffer();
         const frames = MessagePack.decode(contents);
-        let newBlocksTemp = MessagePack.encode(frames[0].newBlocks).byteLength
-        let headerTemp = MessagePack.encode(frames[0].header).byteLength
-        let infoSegmentTemp = MessagePack.encode(frames[0].infoSegment).byteLength
-        let blockSequenceTemp = MessagePack.encode(frames[0].blockSequence).byteLength
+        
+        for (let frame of frames) {
+        let tempNB = MessagePack.encode(frame.newBlocks).byteLength
+        let tempH = MessagePack.encode(frame.header).byteLength
+        let tempIS = MessagePack.encode(frame.infoSegment).byteLength
+        let tempBS = MessagePack.encode(frame.blockSequence).byteLength
+        console.log(tempNB, tempH, tempIS, tempBS)
+        }
 
         
         const transformedData = frames.flatMap((obj, index) => [
@@ -76,7 +80,8 @@
                 "y": { 
                     "field": "size", 
                     "type": "quantitative", 
-                    "title": "Segment Size in Bytes" 
+                    "title": "Segment Size in Bytes",
+                    "scale": {"type": "log"}
                 },
                 "color": { 
                     "field": "segment", 
