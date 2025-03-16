@@ -3,7 +3,7 @@
     <title>Decoder</title>
     <script src="savestreams.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@msgpack/msgpack@3.1.1/dist.umd/msgpack.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.8.0/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -40,6 +40,7 @@
       let statusText = document.getElementById("status-text");
       
       button.onclick = async function () {
+        statusText.innerHTML = "";
         const handle = await window.showOpenFilePicker({
           multiple: false,
         });
@@ -55,7 +56,9 @@
           // Create a new JSZip instance
           const zip = new JSZip();
 
-          statusText.innerHTML <progress id="zip-progress"></progress>
+          statusText.innerHTML += '<progress id="zip-progress" value="0"></progress>'
+          let progressBar = document.getElementById("zip-progress");
+          progressBar.max = savestateBuffers.length;
           
           // Add each file to the zip
           savestateBuffers.forEach((fileData, index) => {
@@ -64,10 +67,12 @@
               `v86state \(${index + 1}\).bin`,
               new Blob([fileData], { type: "application/octet-stream" })
             );
+            progressBar.value = index + 1;
           });
 
           // Generate the zip file as a Blob
           const zipBlob = await zip.generateAsync({ type: "blob" });
+          statusText.HTML += "-> zip file generated";
 
           // Prompt the user to save the zip file using showSaveFilePicker
           const fileHandle = await showSaveFilePicker({
