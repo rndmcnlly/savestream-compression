@@ -54,7 +54,7 @@
     <a href="/inspector.html">inspector</a>
 
     <p>
-      do you want to save states in real time? use this bookmarklet below!
+      do you want to save and encode states in real time? use this bookmarklet below!
       (doesnt actually work currently)
     </p>
     <div class="copy-box">
@@ -79,16 +79,17 @@
         
         let isRecording = false;
         recordButton.addEventListener("click", async() => {
-          
+          let dirHandle = null;
           // if already recording, stop recording
           if (isRecording) {
             isRecording = false;
             recordButton.innerHTML = "record savestream";
             console.warn("stopped recording");
           } else { // start recording savestream
-            const dirHandle = await window.showDirectoryPicker();
+            dirHandle = await window.showDirectoryPicker();
             recordButton.innerHTML = "stop recording"
             console.warn("started recording");
+            isRecording = true;
             
             intervalId = setInterval(async() => {
               let savestate = h.Ia.Vf();
