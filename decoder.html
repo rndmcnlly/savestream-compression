@@ -39,9 +39,11 @@
           multiple: false,
         });
 
+        console.log("here")
         const file = await handle[0].getFile();
         const contents = await file.arrayBuffer();
         const savestateBuffers = decodeSavestream(contents);
+        console.log("files loaded and decoded");
 
         try {
           // Create a new JSZip instance
