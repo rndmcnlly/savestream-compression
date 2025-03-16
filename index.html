@@ -78,21 +78,22 @@
         recordButton.innerHTML = "record savestream";
         
         let intervalId = null;
-        let savestateBuffers = [];
         recordButton.addEventListener("click", async() => {
           
           // if already recording, stop recording
           if (intervalId) {
             clearInterval(intervalId);
             intervalId = null;
+            savestateBuffers.length = 0;
             recordButton.innerHTML = "record savestream";
             console.warn("stopped recording");
           } else { // start recording savestream
             const dirHandle = await window.showDirectoryPicker();
             
             intervalId = setInterval(() => {
-              h.Ga.Rf()
-              console.log("put real functionality here")
+              let savestate = h.Ia.Vf();
+              const blob = new Blob([state], { type: "application/octet-stream"});
+              
             }, 1000);
           }
           recordButton.innerHTML = "stop recording"
