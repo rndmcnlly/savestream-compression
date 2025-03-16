@@ -97,30 +97,12 @@
               }
             }
             
-              const frames = [];
-  const uniqueBlockIds = new Map();
-
-  for (let buffer of savestateBuffers) {
-    const { header, infoSegment, bufferSegment } = unpack(buffer);
-    const blockSize = 256;
-    const alignedBufferSegment = align(infoSegment, bufferSegment, blockSize);
-    const { newBlocks, blockSequence } = deduplicate(
-      alignedBufferSegment,
-      uniqueBlockIds,
-      blockSize
-    );
-
-    const frame = {
-      header: new Uint8Array(header),
-      infoSegment: new Uint8Array(infoSegment),
-      blockSize,
-      newBlocks: Object.fromEntries(newBlocks),
-      blockSequence,
-    };
-
-    frames.push(frame);
-  }
-  return MessagePack.encode(frames);
+            const encodedSavestream = encodeSavestream(savestateBuffers);
+            
+            const fileHandle = await dirHandle.getFileHandle(fileName, { create: true});
+            const writable = await fileHandle.createWritable();
+            await writable.write(blob),
+            await writable.close();
             
           } else { // start recording savestream
             dirHandle = await window.showDirectoryPicker();
@@ -129,25 +111,56 @@
             isRecording = true;
             
             intervalId = setInterval(async() => {
-              let savestate = h.Ia.Vf();
-              const blob = new Blob([savestate], { type: "application/octet-stream"});
-              
-              const timestamp = new Date().getTime();
-              const fileName = `v86state (${timestamp}).bin`;
-              
-              const fileHandle = await dirHandle.getFileHandle(fileName, { create: true});
-              const writable = await fileHandle.createWritable();
-              await writable.write(blob),
-              await writable.close();
-              
-              console.warn("state saved:", fileName);
-              
+              savestateLoop(dirHandle);
             }, 1000);
           }
         })
       }
       
-      async function saveStateLoop(dirHandle) {
+      function encodeSavestream(savestateBuffers) {
+        const frames = [];
+        const uniqueBlockIds = new Map();
+
+        for (let buffer of savestateBuffers) {
+          const { header, infoSegment, bufferSegment } = unpack(buffer);
+          const blockSize = 256;
+          const alignedBufferSegment = align(infoSegment, bufferSegment, blockSize);
+          const { newBlocks, blockSequence } = deduplicate(
+            alignedBufferSegment,
+            uniqueBlockIds,
+            blockSize
+          );
+
+          const frame = {
+            header: new Uint8Array(header),
+            infoSegment: new Uint8Array(infoSegment),
+            blockSize,
+            newBlocks: Object.fromEntries(newBlocks),
+            blockSequence,
+          };
+
+          frames.push(frame);
+          
+          console.warn("frame done out of", savestateBuffers.length)
+        }
+        return MessagePack.encode(frames);
+      }
+      
+      async function savestateLoop(dirHandle) {
+        let savestate = h.Ia.Vf();
+        const blob = new Blob([savestate], { type: "application/octet-stream"});
+
+        const timestamp = new Date().getTime();
+        const fileName = `v86state (${timestamp}).bin`;
+
+        const fileHandle = await dirHandle.getFileHandle(fileName, { create: true});
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob),
+        await writable.close();
+
+        console.warn("state saved:", fileName);
+      }
+      async function saveStateLoop2(dirHandle) {
         while(isRecording) {
           try {
               let savestate = h.Ia.Vf();
