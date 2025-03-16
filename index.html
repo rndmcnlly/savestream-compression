@@ -85,6 +85,16 @@
             isRecording = false;
             recordButton.innerHTML = "record savestream";
             console.warn("stopped recording");
+            console.warn("making .savestream file...")
+            
+            const savestateBuffers = [];
+            
+            for await (const entry of dirHandle.values()) {
+              if(entry.kind === "file" && entry.name.endsWith(".bin")) {
+                const file = await entry.getFile();
+              }
+            }
+            
           } else { // start recording savestream
             dirHandle = await window.showDirectoryPicker();
             recordButton.innerHTML = "stop recording"
