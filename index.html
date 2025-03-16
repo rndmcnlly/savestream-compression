@@ -97,7 +97,30 @@
               }
             }
             
-            
+              const frames = [];
+  const uniqueBlockIds = new Map();
+
+  for (let buffer of savestateBuffers) {
+    const { header, infoSegment, bufferSegment } = unpack(buffer);
+    const blockSize = 256;
+    const alignedBufferSegment = align(infoSegment, bufferSegment, blockSize);
+    const { newBlocks, blockSequence } = deduplicate(
+      alignedBufferSegment,
+      uniqueBlockIds,
+      blockSize
+    );
+
+    const frame = {
+      header: new Uint8Array(header),
+      infoSegment: new Uint8Array(infoSegment),
+      blockSize,
+      newBlocks: Object.fromEntries(newBlocks),
+      blockSequence,
+    };
+
+    frames.push(frame);
+  }
+  return MessagePack.encode(frames);
             
           } else { // start recording savestream
             dirHandle = await window.showDirectoryPicker();
@@ -148,6 +171,9 @@
           }
         }
       }
+    </script>
+    
+    <script>
       
       function copyText() {
         const textElement = document.getElementById("copyContent");
