@@ -100,7 +100,7 @@
             const encodedSavestream = encodeSavestream(savestateBuffers);
             const fileName = "last.savestream"
             
-            const fileHandle = await dirHandle.getFileHandle(, { create: true});
+            const fileHandle = await dirHandle.getFileHandle(fileName, { create: true});
             const writable = await fileHandle.createWritable();
             await writable.write(encodedSavestream),
             await writable.close();
@@ -140,6 +140,8 @@
       function encodeSavestream(savestateBuffers) {
         const frames = [];
         const uniqueBlockIds = new Map();
+        let runButton = document.getElementById("run");
+        runButton.click();
 
         for (let buffer of savestateBuffers) {
           const { header, infoSegment, bufferSegment } = unpack(buffer);
@@ -163,6 +165,8 @@
           
           console.warn("frame done out of", savestateBuffers.length)
         }
+        
+        runButton.click()
         return MessagePack.encode(frames);
       }
       
