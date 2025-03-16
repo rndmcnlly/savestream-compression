@@ -98,10 +98,12 @@
 
       let isRecording = false;
       let dirHandle = null;
+      let intervalId = null;
       recordButton.addEventListener("click", async () => {
         // if already recording, stop recording
         if (isRecording) {
           isRecording = false;
+          clearInterval(intervalId)
           recordButton.innerHTML = "record savestream";
           console.warn("stopped recording");
           console.warn("making .savestream file...");
