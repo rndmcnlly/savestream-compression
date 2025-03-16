@@ -31,6 +31,9 @@
     <header>Decoder</header>
     <p>give me your .savestream file!</p>
     <button id="load_files_button">load .savestream file</button>
+    <p id="status-text">
+      
+    </p>
 
     <script>
       let button = document.getElementById("load_files_button");
@@ -38,12 +41,10 @@
         const handle = await window.showOpenFilePicker({
           multiple: false,
         });
-
-        console.log("here")
+        
         const file = await handle[0].getFile();
         const contents = await file.arrayBuffer();
         const savestateBuffers = decodeSavestream(contents);
-        console.log("files loaded and decoded");
 
         try {
           // Create a new JSZip instance

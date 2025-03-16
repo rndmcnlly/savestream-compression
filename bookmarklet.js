@@ -38,7 +38,17 @@ recordButton.addEventListener("click", async () => {
     console.warn("making .savestream file...");
 
     const savestateBuffers = [];
+    
+    // sort handles in numerical order - assumes files are named "v86state (x).bin"
+    dirHandle.values.sort((a, b) => {
+      const fileNameA = a.name;
+      const fileNameB = b.name;
+      const numA = parseInt(fileNameA.match(/\((\d+)\)/)[1], 10);
+      const numB = parseInt(fileNameB.match(/\((\d+)\)/)[1], 10);
 
+      return numA - numB;
+    })
+    
     for await (const entry of dirHandle.values()) {
       if (entry.kind === "file" && entry.name.endsWith(".bin")) {
         const file = await entry.getFile();
@@ -46,6 +56,7 @@ recordButton.addEventListener("click", async () => {
         savestateBuffers.push(buffer);
       }
     }
+    
     const encodedSavestream = encodeSavestream(savestateBuffers);
     const fileName = "last.savestream";
 
@@ -55,7 +66,6 @@ recordButton.addEventListener("click", async () => {
     const writable = await fileHandle.createWritable();
     await writable.write(encodedSavestream), await writable.close();
     console.warn("last.savestream saved to disk")
-    
     
   } else {
     // start recording savestream
