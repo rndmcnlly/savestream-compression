@@ -78,8 +78,8 @@
         recordButton.innerHTML = "record savestream";
         
         let isRecording = false;
+        let dirHandle = null;
         recordButton.addEventListener("click", async() => {
-          let dirHandle = null;
           // if already recording, stop recording
           if (isRecording) {
             isRecording = false;
