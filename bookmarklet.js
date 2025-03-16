@@ -54,6 +54,9 @@ recordButton.addEventListener("click", async () => {
     });
     const writable = await fileHandle.createWritable();
     await writable.write(encodedSavestream), await writable.close();
+    console.warn("last.savestream saved to disk")
+    
+    
   } else {
     // start recording savestream
     dirHandle = await window.showDirectoryPicker();
