@@ -76,14 +76,30 @@
         const recordButton = document.createElement("button");
         runtimeOptions.append(recordButton);
         recordButton.innerHTML = "record savestream";
-        recordButton.onclick = async() => {
-          console.warn("clicked record savestream");
-          const dirHandle = await window.showDirectoryPicker();
+        
+        let intervalId = null;
+        let savestateBuffers = [];
+        recordButton.addEventListener("click", async() => {
+          
+          // if already recording, stop recording
+          if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+            recordButton.innerHTML = "record savestream";
+            console.warn("stopped recording");
+          } else { // start recording savestream
+            const dirHandle = await window.showDirectoryPicker();
+            
+            intervalId = setInterval(() => {
+              h.Ga.Rf()
+              console.log("put real functionality here")
+            }, 1000);
+          }
           recordButton.innerHTML = "stop recording"
-          
-          
-        }
+          console.warn("started recording");
+        })
       }
+      
       function copyText() {
         const textElement = document.getElementById("copyContent");
         const range = document.createRange();
