@@ -92,8 +92,12 @@
             for await (const entry of dirHandle.values()) {
               if(entry.kind === "file" && entry.name.endsWith(".bin")) {
                 const file = await entry.getFile();
+                const buffer = await file.arrayBuffer();
+                savestateBuffers.push(buffer);
               }
             }
+            
+            
             
           } else { // start recording savestream
             dirHandle = await window.showDirectoryPicker();
