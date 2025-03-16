@@ -190,7 +190,7 @@ function encodeSavestream(savestateBuffers) {
 }
 
 // decodes an encoded savestream buffer into an array of state buffers
-// params - encodedSavestreamBuffer: MessagePack encoded Array<obj>
+// params - encodedSavestreamBuffer: MessagePack encoded Array<obj>, pr
 // returns - savestateBuffers: Array<ArrayBuffer>
 function decodeSavestream(encodedSavestreamBuffer) {
   const frames = MessagePack.decode(encodedSavestreamBuffer);
