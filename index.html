@@ -77,14 +77,12 @@
         runtimeOptions.append(recordButton);
         recordButton.innerHTML = "record savestream";
         
-        let intervalId = null;
+        let isRecording = false;
         recordButton.addEventListener("click", async() => {
           
           // if already recording, stop recording
-          if (intervalId) {
-            clearInterval(intervalId);
-            intervalId = null;
-            savestateBuffers.length = 0;
+          if (isRecording) {
+            isRecording = false;
             recordButton.innerHTML = "record savestream";
             console.warn("stopped recording");
           } else { // start recording savestream
@@ -94,7 +92,7 @@
             
             intervalId = setInterval(async() => {
               let savestate = h.Ia.Vf();
-              const blob = new Blob([state], { type: "application/octet-stream"});
+              const blob = new Blob([savestate], { type: "application/octet-stream"});
               
               const timestamp = new Date().getTime();
               const fileName = `v86state (${timestamp}).bin`;
@@ -109,6 +107,31 @@
             }, 1000);
           }
         })
+      }
+      
+      async function saveStateLoop(dirHandle) {
+        while(isRecording) {
+          try {
+              let savestate = h.Ia.Vf();
+              const blob = new Blob([savestate], { type: "application/octet-stream"});
+              
+              const timestamp = new Date().getTime();
+              const fileName = `v86state (${timestamp}).bin`;
+              
+              const fileHandle = await dirHandle.getFileHandle(fileName, { create: true});
+              const writable = await fileHandle.createWritable();
+              await writable.write(blob),
+              await writable.close();
+              
+              console.warn("state saved:", fileName);
+          } catch (error) {
+              console.error("Error saving state:", error);
+          }
+          
+          if (isRecording) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
       }
       
       function copyText() {
