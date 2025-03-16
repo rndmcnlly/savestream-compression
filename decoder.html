@@ -31,25 +31,32 @@
     <header>Decoder</header>
     <p>give me your .savestream file!</p>
     <button id="load_files_button">load .savestream file</button>
-    <p id="status-text">
+    <div id="status-text">
       
-    </p>
+    </div>
 
     <script>
       let button = document.getElementById("load_files_button");
+      let statusText = document.getElementById("status-text");
+      
       button.onclick = async function () {
         const handle = await window.showOpenFilePicker({
           multiple: false,
         });
+        statusText.innerHTML += "<p> -> file loaded successfully</p>"
         
         const file = await handle[0].getFile();
         const contents = await file.arrayBuffer();
         const savestateBuffers = decodeSavestream(contents);
+        statusText.innerHTML += "<p> -> file decoded</p>"
 
         try {
+          statusText.innerHTML += "<p> -> creating .zip file of all buffers </p>"
           // Create a new JSZip instance
           const zip = new JSZip();
 
+          statusText.innerHTML <progress id="zip-progress"></progress>
+          
           // Add each file to the zip
           savestateBuffers.forEach((fileData, index) => {
             // Convert the binary data to a Blob and add it to the zip
