@@ -12,7 +12,7 @@ function loadScript(url) {
 
 (async function () {
   await loadScript(
-    "https://cdn.jsdelivr.net/npm/@msgpack/msgpack@3.0.0-beta3/dist.es5+umd/msgpack.min.js"
+    "https://cdn.jsdelivr.net/npm/@msgpack/msgpack@3.1.1/dist.umd/msgpack.min.js"
   );
 
   if (!window.msgpack && !window.MessagePack) {
