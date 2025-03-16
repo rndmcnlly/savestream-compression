@@ -89,15 +89,25 @@
             console.warn("stopped recording");
           } else { // start recording savestream
             const dirHandle = await window.showDirectoryPicker();
+            recordButton.innerHTML = "stop recording"
+            console.warn("started recording");
             
-            intervalId = setInterval(() => {
+            intervalId = setInterval(async() => {
               let savestate = h.Ia.Vf();
               const blob = new Blob([state], { type: "application/octet-stream"});
               
+              const timestamp = new Date().getTime();
+              const fileName = `v86state (${timestamp}).bin`;
+              
+              const fileHandle = await dirHandle.getFileHandle(fileName, { create: true});
+              const writable = await fileHandle.createWritable();
+              await writable.write(blob),
+              await writable.close();
+              
+              console.warn("state saved:", fileName);
+              
             }, 1000);
           }
-          recordButton.innerHTML = "stop recording"
-          console.warn("started recording");
         })
       }
       
