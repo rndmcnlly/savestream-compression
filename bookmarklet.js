@@ -22,7 +22,9 @@ function loadScript(url) {
 
 const runtimeOptions = document.getElementById("runtime_options");
 const recordButton = document.createElement("button");
+const statusText = document.createElement("p")
 runtimeOptions.append(recordButton);
+runtimeOptions.append(statusText)
 recordButton.innerHTML = "record savestream";
 
 let isRecording = false;
@@ -75,6 +77,7 @@ recordButton.addEventListener("click", async () => {
     dirHandle = await window.showDirectoryPicker();
     recordButton.innerHTML = "stop recording";
     console.warn("started recording");
+    statusText.innerHTML = "started recording"
     isRecording = true;
 
     intervalId = setInterval(async () => {
@@ -160,7 +163,7 @@ function encodeSavestream(savestateBuffers) {
   let runButton = document.getElementById("run");
   runButton.click();
 
-  for (let buffer of savestateBuffers) {
+  for (let [index, buffer] of savestateBuffers.entries()) {
     const { header, infoSegment, bufferSegment } = unpack(buffer);
     const blockSize = 256;
     const alignedBufferSegment = align(infoSegment, bufferSegment, blockSize);
