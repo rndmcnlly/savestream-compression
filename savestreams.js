@@ -216,3 +216,25 @@ function decodeSavestream(encodedSavestreamBuffer) {
   }
   return savestateBuffers;
 }
+
+async function* decodeSavestreamIncremental(encodedSavestreamBuffer) {
+  const knownBlocks = new Map();
+  for await (let frame of MessagePack.decodeArrayStream(encodedSavestreamBuffer)) {
+    const { header, infoSegment, blockSize, newBlocks, blockSequence } = frame;
+    for (let [k, v] of Object.entries(newBlocks)) {
+      knownBlocks.set(k, v);
+    }
+    const alignedBufferSegment = reduplicate(
+      knownBlocks,
+      blockSequence,
+      blockSize
+    );
+    const bufferSegment = unalign(infoSegment, alignedBufferSegment, blockSize);
+    const savestateBuffer = repack({
+      header,
+      infoSegment,
+      bufferSegment,
+    });
+    yield Promise.resolve(savestateBuffer);
+  }
+}
