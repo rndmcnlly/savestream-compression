@@ -30,7 +30,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
   <body>
     <header>Inspector</header>
-    <p>give me your .savestream file!</p>
+    <p>Give me your .savestream file!</p>
     <button id="load_files_button">load .savestream file</button>
     <div id="chart"></div>
     <script>
@@ -45,10 +45,10 @@
         const frames = MessagePack.decode(contents);
         
         const transformedData = frames.flatMap((obj, index) => [
-          { segment: "header", size: MessagePack.encode(obj.header).byteLength, object_id: `Frame ${index + 1}` },
-          { segment: "infoSegment", size: MessagePack.encode(obj.infoSegment).byteLength, object_id: `Frame ${index + 1}` },
-          { segment: "newBlocks", size: MessagePack.encode(obj.newBlocks).byteLength, object_id: `Frame ${index + 1}` },
-          { segment: "blockSequence", size: MessagePack.encode(obj.blockSequence).byteLength, object_id: `Frame ${index + 1}` }
+          //{ segment: "Header", size: MessagePack.encode(obj.header).byteLength, object_id: `Frame ${index + 1}` },
+          { segment: "Info segment", size: MessagePack.encode(obj.infoSegment).byteLength, object_id: `Frame ${index + 1}` },
+          { segment: "New Blocks", size: MessagePack.encode(obj.newBlocks).byteLength, object_id: `Frame ${index + 1}` },
+          { segment: "Block ID Sequence", size: MessagePack.encode(obj.blockSequence).byteLength, object_id: `Frame ${index + 1}` }
         ]);
         
         // Vega-Lite chart specification
@@ -72,7 +72,7 @@
                     "field": "size", 
                     "type": "quantitative", 
                     "title": "Segment Size in Bytes",
-                    "scale": {"type": "symlog", "constant": 100}
+                    "scale": {"type": "symlog", "constant": 1e6}
                 },
                 y2: { value: 1 },
                 "color": { 

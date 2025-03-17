@@ -31,6 +31,8 @@
     <header>Decoder</header>
     <p>give me your .savestream file!</p>
     <button id="load_files_button">load .savestream file</button>
+    <div id="result">
+    </div>
     <div id="status-text">
       
     </div>
@@ -49,7 +51,17 @@
         const file = await handle[0].getFile();
         const contents = await file.arrayBuffer();
         const savestateBuffers = decodeSavestream(contents);
-        statusText.innerHTML += "<p> -> file decoded</p>"
+        statusText.innerHTML += "<p> -> file decoded</p>";
+        
+        for (let [i, buffer] of savestateBuffers.entries()) {
+          const filename = `v86state (${i+1}).bin`;
+          const div = document.createElement("div");
+          const a = document.createElement("a");
+          a.innerHTML = filename;
+          a.href = "#";
+          div.append(a);
+          document.getElementById("result").append(div);
+        }
 
         try {
           statusText.innerHTML += "<p> -> creating .zip file of all buffers </p>"
