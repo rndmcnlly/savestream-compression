@@ -50,27 +50,29 @@
   </head>
   <body>
     <h1>Welcome to the Savestreams Project!</h1>
-    <a href="/encoder.html">encoder</a>
-    <a href="/decoder.html">decoder</a>
-    <a href="/inspector.html">inspector</a>
-
+    <button onclick="window.location.href='/encoder.html';">encoder</button>
+    <button onclick="window.location.href='/decoder.html';">decoder</button>
+    <button onclick="window.location.href='/inspector.html';">inspector</button>
     <p>
       do you want to save and encode states in real time? use this bookmarklet
-      below! (doesnt actually work currently)
+      below! **important notes!**
     </p>
     <div class="copy-box">
-      <code class="copy-text" id="copyContent">
-        javascript:(function() { const runtimeOptions =
-        document.getElementById("runtime_options"); const recordButton =
-        document.createElement("button"); runtimeOptions.append(recordButton);
-        recordButton.innerHTML = "record savestream"; recordButton.onclick =
-        async () =&gt; { console.log("clicked record savestream"); const dir =
-        dir = await navigator.storage.getDirectory(); }; })();
-      </code>
+      <code class="copy-text" id="copyContent"> </code>
       <button class="copy-btn" onclick="copyText()">Copy</button>
     </div>
 
     <script>
+      let codeBox = document.getElementById("copyContent")
+      let bookmarklet = document.getElementById("bookmarklet");
+      if (bookmarklet) {
+        fetch(bookmarklet.src) // Download the script file
+          .then((response) => response.text()) // Convert response to text
+          .then((jsText) => codeBox.innerHTML = jsText) // send the script text to copy-text id
+          .catch((error) => console.error("Error:", error));
+      }
+      debugger;
+
       function copyText() {
         const textElement = document.getElementById("copyContent");
         const range = document.createRange();
