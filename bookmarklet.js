@@ -29,7 +29,7 @@ let isRecording = false;
 let dirHandle = null;
 let intervalId = null;
 recordButton.addEventListener("click", async () => {
-  // if already recording, stop recording
+  /*if already recording, stop recording*/
   if (isRecording) {
     isRecording = false;
     clearInterval(intervalId);
@@ -39,7 +39,7 @@ recordButton.addEventListener("click", async () => {
 
     const savestateBuffers = [];
     
-    // sort handles in numerical order - assumes files are named "v86state (x).bin"
+    /*sort handles in numerical order - assumes files are named "v86state (x).bin"*/
     dirHandle.values.sort((a, b) => {
       const fileNameA = a.name;
       const fileNameB = b.name;
@@ -47,7 +47,7 @@ recordButton.addEventListener("click", async () => {
       const numB = parseInt(fileNameB.match(/\((\d+)\)/)[1], 10);
 
       return numA - numB;
-    })
+    });
     
     for await (const entry of dirHandle.values()) {
       if (entry.kind === "file" && entry.name.endsWith(".bin")) {
@@ -65,10 +65,10 @@ recordButton.addEventListener("click", async () => {
     });
     const writable = await fileHandle.createWritable();
     await writable.write(encodedSavestream), await writable.close();
-    console.warn("last.savestream saved to disk")
+    console.warn("last.savestream saved to disk");
     
   } else {
-    // start recording savestream
+    /*start recording savestream*/
     dirHandle = await window.showDirectoryPicker();
     recordButton.innerHTML = "stop recording";
     console.warn("started recording");
@@ -86,13 +86,11 @@ function unpack(fileContent) {
 
   let header = fileContent.slice(0, blockStart);
 
-  // get infoLen from header
   let headerDV = new DataView(header);
-  let infoLen = headerDV.getInt32(infoLenIndex * 4, true); // Set to true for little-endian, false for big-endian
+  let infoLen = headerDV.getInt32(infoLenIndex * 4, true);
 
   let infoSegment = fileContent.slice(blockStart, blockStart + infoLen);
 
-  // align bufferOffset to the next multiple of 4 (32 bit = 4 bytes)
   let bufferOffset = blockStart + infoLen;
   bufferOffset = (bufferOffset + 3) & ~3;
 
@@ -109,10 +107,8 @@ function align(infoSegment, bufferSegment, blockSize) {
     let offset = bufferInfo.offset;
     let length = bufferInfo.length;
 
-    // calculate padding to align length to blockSize
     let paddingLength = (blockSize - (length % blockSize)) % blockSize;
 
-    // extract raw block and create new array with padding
     let rawBlock = new Uint8Array(bufferSegment, offset, length);
     let expandedBlock = new Uint8Array(length + paddingLength);
     expandedBlock.set(rawBlock);
@@ -120,7 +116,6 @@ function align(infoSegment, bufferSegment, blockSize) {
     alignedBlocks.push(expandedBlock);
   }
 
-  // concatenate all blocks into single array buffer
   let totalSize = alignedBlocks.reduce((sum, block) => sum + block.length, 0);
   let alignedBuffer = new Uint8Array(totalSize);
 
@@ -137,13 +132,12 @@ function deduplicate(alignedBuffer, uniqueBlockIds, blockSize) {
   const decoder = new TextDecoder();
   const blockCount = Math.floor(alignedBuffer.byteLength / blockSize);
 
-  // keeps track of unique blocks from this state
   const newBlocks = new Map();
   const blockSequence = [];
 
   for (let i = 0; i < blockCount; i++) {
     const offset = i * blockSize;
-    const block = new Uint8Array(alignedBuffer, offset, blockSize); // a view into the large buffer
+    const block = new Uint8Array(alignedBuffer, offset, blockSize);
 
     const blockKey = decoder.decode(block);
     if (!uniqueBlockIds.has(blockKey)) {
@@ -190,22 +184,22 @@ function encodeSavestream(savestateBuffers) {
   return MessagePack.encode(frames);
 }
 
-// Function to check and generate unique file name
+/*Function to check and generate unique file name*/
 async function getUniqueFileHandle(dirHandle, baseFileName) {
   let fileName = baseFileName;
   let counter = 1;
 
   while (true) {
     try {
-      // Try to get the file handle
+      /*try to get the file handle*/
       const fileHandle = await dirHandle.getFileHandle(fileName, {
         create: false,
       });
-      // If the file exists, increment the counter and try again
+      /*If the file exists, increment the counter and try again*/
       fileName = baseFileName.replace(".msgpack", ` (${counter}).msgpack`);
       counter++;
     } catch (err) {
-      // If the file doesn't exist, create the file handle
+      /*If the file doesn't exist, create the file handle*/
       return dirHandle.getFileHandle(fileName, { create: true });
     }
   }
@@ -227,32 +221,4 @@ async function savestateLoop(dirHandle) {
   await writable.write(blob), await writable.close();
 
   console.warn("state saved");
-}
-
-async function saveStateLoop2(dirHandle) {
-  while (isRecording) {
-    try {
-      let savestate = h.Ia.Vf();
-      const blob = new Blob([savestate], {
-        type: "application/octet-stream",
-      });
-
-      const timestamp = new Date().getTime();
-      const fileName = `v86state (${timestamp}).bin`;
-
-      const fileHandle = await dirHandle.getFileHandle(fileName, {
-        create: true,
-      });
-      const writable = await fileHandle.createWritable();
-      await writable.write(blob), await writable.close();
-
-      console.warn("state saved:", fileName);
-    } catch (error) {
-      console.error("Error saving state:", error);
-    }
-
-    if (isRecording) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-  }
 }
