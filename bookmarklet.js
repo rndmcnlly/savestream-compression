@@ -58,7 +58,7 @@ recordButton.addEventListener("click", async () => {
     for (let entry of entries) {
       const file = await entry.getFile();
       const buffer = await file.arrayBuffer();
-      savestateBuffers.push(entry);
+      savestateBuffers.push(buffer);
     }
     
     const encodedSavestream = encodeSavestream(savestateBuffers);
@@ -70,7 +70,6 @@ recordButton.addEventListener("click", async () => {
     const writable = await fileHandle.createWritable();
     await writable.write(encodedSavestream), await writable.close();
     console.warn("last.savestream saved to disk");
-    
   } else {
     /*start recording savestream*/
     dirHandle = await window.showDirectoryPicker();
