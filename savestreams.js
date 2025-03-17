@@ -217,9 +217,9 @@ function decodeSavestream(encodedSavestreamBuffer) {
   return savestateBuffers;
 }
 
-async function* decodeSavestreamIncremental(encodedSavestreamBuffer) {
+async function* decodeSavestreamIncremental(encodedSavestreamBufferStream) {
   const knownBlocks = new Map();
-  for await (let frame of MessagePack.decodeArrayStream(encodedSavestreamBuffer)) {
+  for await (let frame of MessagePack.decodeArrayStream(encodedSavestreamBufferStream)) {
     const { header, infoSegment, blockSize, newBlocks, blockSequence } = frame;
     for (let [k, v] of Object.entries(newBlocks)) {
       knownBlocks.set(k, v);
