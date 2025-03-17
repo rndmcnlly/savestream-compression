@@ -22,9 +22,9 @@ function loadScript(url) {
 
 const runtimeOptions = document.getElementById("runtime_options");
 const recordButton = document.createElement("button");
-const statusText = document.createElement("p")
+const statusText = document.createElement("p");
 runtimeOptions.append(recordButton);
-runtimeOptions.append(statusText)
+runtimeOptions.append(statusText);
 recordButton.innerHTML = "record savestream";
 
 let isRecording = false;
@@ -38,6 +38,7 @@ recordButton.addEventListener("click", async () => {
     recordButton.innerHTML = "record savestream";
     console.warn("stopped recording");
     console.warn("making .savestream file...");
+    statusText.innerHTML = "stopped recording, making .savestream file...";
 
     const savestateBuffers = [];
     const entries = [];
@@ -72,16 +73,19 @@ recordButton.addEventListener("click", async () => {
     const writable = await fileHandle.createWritable();
     await writable.write(encodedSavestream), await writable.close();
     console.warn("last.savestream saved to disk");
+    statusText.innerHTML = "last.savestream saved to disk";
   } else {
     /*start recording savestream*/
     dirHandle = await window.showDirectoryPicker();
     recordButton.innerHTML = "stop recording";
-    console.warn("started recording");
-    statusText.innerHTML = "started recording"
     isRecording = true;
+    
+    console.warn("started recording");
+    statusText.innerHTML = "started recording"; 
 
+    let counter = 0;
     intervalId = setInterval(async () => {
-      savestateLoop(dirHandle);
+      savestateLoop(dirHandle, ++counter);
     }, 1000);
   }
 });
@@ -184,6 +188,7 @@ function encodeSavestream(savestateBuffers) {
     frames.push(frame);
 
     console.warn("frames done out of", savestateBuffers.length);
+    statusText.innerHTML = `${index + 1} frames done out of ${savestateBuffers.length}`;
   }
 
   runButton.click();
@@ -211,7 +216,7 @@ async function getUniqueFileHandle(dirHandle, baseFileName) {
   }
 }
 
-async function savestateLoop(dirHandle) {
+async function savestateLoop(dirHandle, counter) {
   let savestate = h.Ia.Vf();
   const blob = new Blob([savestate], {
     type: "application/octet-stream",
@@ -227,4 +232,5 @@ async function savestateLoop(dirHandle) {
   await writable.write(blob), await writable.close();
 
   console.warn("state saved");
+  statusText.innerHTML = `${counter} states saved`;
 }
