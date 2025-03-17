@@ -39,7 +39,7 @@ recordButton.addEventListener("click", async () => {
 
     const savestateBuffers = [];
     
-    /*sort handles in numerical order - assumes files are named "v86state (x).bin"*/
+    /*file sorting does not work, but m*/
     dirHandle.values.sort((a, b) => {
       const fileNameA = a.name;
       const fileNameB = b.name;
