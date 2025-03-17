@@ -3,6 +3,7 @@
     <script id="bookmarklet" src="bookmarklet.js"></script>
     <style>
       code {
+        
       }
       body {
         font-family: Arial, sans-serif;
@@ -15,7 +16,6 @@
         padding: 20px;
         border-radius: 12px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        max-width: 400px;
         text-align: center;
         position: relative;
       }
@@ -33,7 +33,7 @@
       }
 
       button {
-        margin-top: 10px;
+        margin-bottom: 10px;
         background: #007bff;
         color: white;
         border: none;
@@ -54,23 +54,41 @@
     <button onclick="window.location.href='/decoder.html';">decoder</button>
     <button onclick="window.location.href='/inspector.html';">inspector</button>
     <p>
-      do you want to save and encode states in real time? use this bookmarklet
-      below! **important notes!**
+      Do you want to save and encode states in real time? Use this bookmarklet
+      below!
+      <br><br>
+      <strong>How to use:</strong>
+      <br>
+      <ol>
+        <li>Copy the text in the code box below, by </li>
+        <li>Second item</li>
+        <li>Third item</li>
+      </ol>
+      <br><br>
+      <strong>Important notes:</strong>
+      <br>
+      Please keep in mind that in order to use the bookmarklet, 
     </p>
+    <ul>
+      <li>First item</li>
+      <li>Second item</li>
+      <li>Third item</li>
+    </ul>
     <div class="copy-box">
-      <code class="copy-text" id="copyContent"> </code>
-      <button class="copy-btn" onclick="copyText()">Copy</button>
+      <button class="copy-btn" onclick="copyText()">Copy Bookmarklet</button>
+      <code class="copy-text" id="copyContent">javascript:(function() {</code>
     </div>
 
     <script>
-      let codeBox = document.getElementById("copyContent")
+      let codeBox = document.getElementById("copyContent");
       let bookmarklet = document.getElementById("bookmarklet");
       if (bookmarklet) {
         fetch(bookmarklet.src) // Download the script file
           .then((response) => response.text()) // Convert response to text
-          .then((jsText) => codeBox.innerHTML = jsText) // send the script text to copy-text id
+          .then((jsText) => ({codeBox.innerHTML += jsText})) // send the script text to copy-text id
           .catch((error) => console.error("Error:", error));
       }
+      codeBox.innerHTML += "})();"
       debugger;
 
       function copyText() {
