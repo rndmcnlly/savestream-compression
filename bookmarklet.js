@@ -38,9 +38,15 @@ recordButton.addEventListener("click", async () => {
     console.warn("making .savestream file...");
 
     const savestateBuffers = [];
+    const entries = [];
     
-    /*file sorting does not work, but m*/
-    dirHandle.values.sort((a, b) => {
+    for await (const entry of dirHandle.values()) {
+      if (entry.kind === "file" && entry.name.endsWith(".bin")) {
+        entries.push(entry);
+      }
+    }
+    
+    entries.sort((a, b) => {
       const fileNameA = a.name;
       const fileNameB = b.name;
       const numA = parseInt(fileNameA.match(/\((\d+)\)/)[1], 10);
@@ -48,13 +54,11 @@ recordButton.addEventListener("click", async () => {
 
       return numA - numB;
     });
-    
-    for await (const entry of dirHandle.values()) {
-      if (entry.kind === "file" && entry.name.endsWith(".bin")) {
-        const file = await entry.getFile();
-        const buffer = await file.arrayBuffer();
-        savestateBuffers.push(buffer);
-      }
+  
+    for (let entry of entries) {
+      const file = await entry.getFile();
+      const buffer = await file.arrayBuffer();
+      savestateBuffers.push(entry);
     }
     
     const encodedSavestream = encodeSavestream(savestateBuffers);
