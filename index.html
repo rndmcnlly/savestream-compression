@@ -67,7 +67,7 @@
       <strong>How to use:</strong>
     </p>
     <ol>
-      <li></li>
+      <li>Click on the newly-added "record savestream" button. This </li>
       <li></li>
     </ol>
     <p>
@@ -82,7 +82,7 @@
     </ul>
     <div class="copy-box">
       <button class="copy-btn" onclick="copyText()">Copy Bookmarklet</button>
-      <code class="copy-text" id="copyContent">javascript:(function() {</code>
+      <code class="copy-text" id="copyContent"></code>
     </div>
 
     <script>
@@ -92,12 +92,10 @@
         fetch(bookmarklet.src) // Download the script file
           .then((response) => response.text()) // Convert response to text
           .then((jsText) => {
-            codeBox.innerHTML += jsText;
-            codeBox.innerHTML += codeBox.innerHTML += "})();";
+            codeBox.innerHTML = "javascript:(function() {" + jsText + "})();";
           }) // send the script text to copy-text id
           .catch((error) => console.error("Error:", error));
       }
-      debugger;
 
       function copyText() {
         const textElement = document.getElementById("copyContent");
