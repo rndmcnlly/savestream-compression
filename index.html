@@ -57,17 +57,19 @@
       Do you want to save and encode states in real time? Use this bookmarklet
       below!
       <br><br>
-      <strong>How to use:</strong>
+      <strong>Creating the bookmarklet:</strong>
       <br>
       <ol>
-        <li>Copy the text in the code box below, by </li>
-        <li>Second item</li>
-        <li>Third item</li>
+        <li>Copy the text in the code box below.</li>
+        <li>Create a bookmark on any page. <strong>Paste the copied text into the URL field.</strong> (You may have to edit the URL within your browser's bookmark manager.)</li>
+        <li>Navigate to the <a href="https://copy.sh/v86/debug.html">v86-debug site</a>, and choose a virtual machine to run.</li>
+        <li>On the page for your desired machine emulator, click on the bookmark.</li>
       </ol>
-      <br><br>
+      <strong>How to use:</strong>
+      <
       <strong>Important notes:</strong>
       <br>
-      Please keep in mind that in order to use the bookmarklet, 
+      Please keep in mind that in order to use the bookmarklet, certain conditions MUST BE TRUE!
     </p>
     <ul>
       <li>First item</li>
@@ -85,10 +87,12 @@
       if (bookmarklet) {
         fetch(bookmarklet.src) // Download the script file
           .then((response) => response.text()) // Convert response to text
-          .then((jsText) => ({codeBox.innerHTML += jsText})) // send the script text to copy-text id
+          .then((jsText) => {
+            codeBox.innerHTML += jsText;
+            codeBox.innerHTML += codeBox.innerHTML += "})();";
+          }) // send the script text to copy-text id
           .catch((error) => console.error("Error:", error));
       }
-      codeBox.innerHTML += "})();"
       debugger;
 
       function copyText() {
