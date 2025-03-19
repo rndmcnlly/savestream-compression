@@ -101,20 +101,20 @@ function unalign(infoSegment, alignedBuffer, blockSize) {
     let paddingLength = (blockSize - (length % blockSize)) % blockSize;
 
     // remove padding from aligned buffers
-    let rawBlock = new Uint8Array(alignedBuffer, offset, (length + 3) & ~3);
+    let rawBlock = new Uint8Array(alignedBuffer, offset, length);
 
     offset += length + paddingLength;
     unalignedBlocks.push(rawBlock);
   }
 
   //concatenate all blocks into single array buffer
-  let totalSize = unalignedBlocks.reduce((sum, block) => sum + block.length, 0);
+  let totalSize = unalignedBlocks.reduce((sum, block) => sum + (block.length + 3 & ~3), 0);
   let bufferSegment = new Uint8Array(totalSize);
 
   let writeOffset = 0;
   for (let block of unalignedBlocks) {
     bufferSegment.set(block, writeOffset);
-    writeOffset += block.length;
+    writeOffset += (block.length + 3) & ~3;
   }
 
   return bufferSegment.buffer;
