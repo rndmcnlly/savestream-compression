@@ -45,10 +45,10 @@
         const frames = MessagePack.decode(contents);
         
         const transformedData = frames.flatMap((obj, index) => [
-          //{ segment: "Header", size: MessagePack.encode(obj.header).byteLength, object_id: `Frame ${index + 1}` },
-          { segment: "Info segment", size: MessagePack.encode(obj.infoSegment).byteLength, object_id: `Frame ${index + 1}` },
-          { segment: "New Blocks", size: MessagePack.encode(obj.newBlocks).byteLength, object_id: `Frame ${index + 1}` },
-          { segment: "Block ID Sequence", size: MessagePack.encode(obj.blockSequence).byteLength, object_id: `Frame ${index + 1}` }
+          //{ segment: "Header", size: MessagePack.encode(obj.header).byteLength, object_id: `${index + 1}`.padStart(3,"0") },
+          { segment: "Info segment", size: MessagePack.encode(obj.infoSegment).byteLength, object_id: `${index + 1}`.padStart(3,"0") },
+          { segment: "New Blocks", size: MessagePack.encode(obj.newBlocks).byteLength, object_id: `${index + 1}`.padStart(3,"0") },
+          { segment: "Block ID Sequence", size: MessagePack.encode(obj.blockSequence).byteLength, object_id: `${index + 1}`.padStart(3,"0") }
         ]);
         
         // Vega-Lite chart specification
@@ -72,7 +72,7 @@
                     "field": "size", 
                     "type": "quantitative", 
                     "title": "Segment Size in Bytes",
-                    "scale": {"type": "symlog", "constant": 1e6}
+                    "scale": {"type": "symlog", "constant": 1e5}
                 },
                 y2: { value: 1 },
                 "color": { 
