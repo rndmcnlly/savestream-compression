@@ -1,4 +1,24 @@
-/* globals emulator */
+/* globals emulator, MessagePack */
+
+function loadScript(url) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = url;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load script: ${url}`));
+    document.head.appendChild(script);
+  });
+}
+
+(async function () {
+  await loadScript(
+    "https://cdn.jsdelivr.net/npm/@msgpack/msgpack@3.1.1/dist.umd/msgpack.min.js"
+  );
+
+  if (!window.msgpack && !window.MessagePack) {
+    throw new Error("msgpack not loaded correctly");
+  }
+})();
 
 // input tracking code made by chatGPT
 function startVmInputTracking() {
@@ -6,12 +26,8 @@ function startVmInputTracking() {
   let logging = true;
 
   // Preserve original methods
-  const origMouseMove = emulator.mouse_adapter.mousemove.bind(
-    emulator.mouse_adapter
-  );
-  const origMouseButton = emulator.mouse_adapter.mouse_button.bind(
-    emulator.mouse_adapter
-  );
+  const origMouseMove = emulator.mouse_adapter.mousemove.bind(emulator.mouse_adapter);
+  const origMouseButton = emulator.mouse_adapter.mouse_button.bind(emulator.mouse_adapter);
 
   // Override mouse move
   emulator.mouse_adapter.mousemove = function (dx, dy) {
@@ -111,8 +127,15 @@ async function saveStatesWithMetadata(intervalMs, numSaves) {
     vmSpecs: vmSpecs,
     inputSequence: inputTracker.events
   }
+  const encoded = MessagePack.encode(metadata);
   
+  dirHandle = await window.showDirectoryPicker();
+  const fileHandle = await dirHandle.getFileHandle("metadata.msgpack", { create: true });
+  const writable = await fileHandle.createWritable();
+  await writable.write(encoded);
+  await writable.close();
   
+  console.warn("Metadata saved!");
 }
 
 //change interval and number of states if wanted
