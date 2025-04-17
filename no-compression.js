@@ -1,8 +1,16 @@
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-
-async function noCompressionStates() {
+async function saveUncompressedStates(intervalMs, numSaves) {
   let dirHandle = await window.showDirectoryPicker();
   
-  saveI
+  for (let i = 0; i < numSaves; i++) {
+    const fileName = `v86state (${i}).bin`;
+    const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+    const writable = await fileHandle.createWritable();
+    
+    
+  }
 }
  
