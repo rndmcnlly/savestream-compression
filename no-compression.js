@@ -124,6 +124,7 @@ async function saveStatesWithMetadata(intervalMs, numSaves) {
   inputTracker.stop();
   console.warn("All files saved!");
 
+  // emulator.settings is from added line in 
   // const vmSpecs = {
   //   ramMB: emulator.config.memory_size / (1024 * 1024),
   //   hda: emulator.config.hda?.url || null,
