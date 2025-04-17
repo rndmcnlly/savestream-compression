@@ -25,35 +25,35 @@ function startVmInputTracking() {
   const vmInputEvents = [];
   let logging = true;
 
-  // Preserve original methods
-  const origMouseMove = emulator.mouse_adapter.mousemove.bind(emulator.mouse_adapter);
-  const origMouseButton = emulator.mouse_adapter.mouse_button.bind(emulator.mouse_adapter);
+//   // Preserve original methods
+//   const origMouseMove = emulator.mouse_adapter.mousemove.bind(emulator.mouse_adapter);
+//   const origMouseButton = emulator.mouse_adapter.mouse_button.bind(emulator.mouse_adapter);
 
-  // Override mouse move
-  emulator.mouse_adapter.mousemove = function (dx, dy) {
-    if (logging) {
-      vmInputEvents.push({
-        type: "mouse_move",
-        dx,
-        dy,
-        t: Date.now(),
-      });
-    }
-    return origMouseMove(dx, dy);
-  };
+//   // Override mouse move
+//   emulator.mouse_adapter.mousemove = function (dx, dy) {
+//     if (logging) {
+//       vmInputEvents.push({
+//         type: "mouse_move",
+//         dx,
+//         dy,
+//         t: Date.now(),
+//       });
+//     }
+//     return origMouseMove(dx, dy);
+//   };
 
-  // Override mouse button
-  emulator.mouse_adapter.mouse_button = function (button, is_pressed) {
-    if (logging) {
-      vmInputEvents.push({
-        type: "mouse_button",
-        button,
-        is_pressed,
-        t: Date.now(),
-      });
-    }
-    return origMouseButton(button, is_pressed);
-  };
+//   // Override mouse button
+//   emulator.mouse_adapter.mouse_button = function (button, is_pressed) {
+//     if (logging) {
+//       vmInputEvents.push({
+//         type: "mouse_button",
+//         button,
+//         is_pressed,
+//         t: Date.now(),
+//       });
+//     }
+//     return origMouseButton(button, is_pressed);
+//   };
 
   // Register keyboard scancodes
   const keyboardHandler = function (code) {
