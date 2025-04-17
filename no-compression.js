@@ -29,35 +29,41 @@ function startVmInputTracking() {
   const vmInputEvents = [];
   let logging = true;
 
-//   // Preserve original methods
-//   const origMouseMove = emulator.mouse_adapter.mousemove.bind(emulator.mouse_adapter);
-//   const origMouseButton = emulator.mouse_adapter.mouse_button.bind(emulator.mouse_adapter);
+  if (emulator.mouse_adapter) {
+    // Preserve original methods
+    const origMouseMove = emulator.mouse_adapter.mousemove.bind(
+      emulator.mouse_adapter
+    );
+    const origMouseButton = emulator.mouse_adapter.mouse_button.bind(
+      emulator.mouse_adapter
+    );
 
-//   // Override mouse move
-//   emulator.mouse_adapter.mousemove = function (dx, dy) {
-//     if (logging) {
-//       vmInputEvents.push({
-//         type: "mouse_move",
-//         dx,
-//         dy,
-//         t: Date.now(),
-//       });
-//     }
-//     return origMouseMove(dx, dy);
-//   };
+    // Override mouse move
+    emulator.mouse_adapter.mousemove = function (dx, dy) {
+      if (logging) {
+        vmInputEvents.push({
+          type: "mouse_move",
+          dx,
+          dy,
+          t: Date.now(),
+        });
+      }
+      return origMouseMove(dx, dy);
+    };
 
-//   // Override mouse button
-//   emulator.mouse_adapter.mouse_button = function (button, is_pressed) {
-//     if (logging) {
-//       vmInputEvents.push({
-//         type: "mouse_button",
-//         button,
-//         is_pressed,
-//         t: Date.now(),
-//       });
-//     }
-//     return origMouseButton(button, is_pressed);
-//   };
+    // Override mouse button
+    emulator.mouse_adapter.mouse_button = function (button, is_pressed) {
+      if (logging) {
+        vmInputEvents.push({
+          type: "mouse_button",
+          button,
+          is_pressed,
+          t: Date.now(),
+        });
+      }
+      return origMouseButton(button, is_pressed);
+    };
+  }
 
   // Register keyboard scancodes
   const keyboardHandler = function (code) {
@@ -79,7 +85,6 @@ function startVmInputTracking() {
     isLogging: () => logging,
   };
 }
-
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -111,34 +116,36 @@ async function saveUncompressedStates(intervalMs, numSaves) {
 
 async function saveStatesWithMetadata(intervalMs, numSaves) {
   let dirHandle = await window.showDirectoryPicker();
-  
-  const startTime = new Date().toISOString();    //saves in YYYY-MM-DDtime format 
+
+  const startTime = new Date().toISOString(); //saves in YYYY-MM-DDtime format
   const inputTracker = startVmInputTracking();
-  
+
   await saveStateLoop(intervalMs, numSaves, dirHandle);
   inputTracker.stop();
   console.warn("All files saved!");
-  
-  const vmSpecs = {
-    ramMB: emulator.config.memory_size / (1024 * 1024),
-    hda: emulator.config.hda?.url || null,
-    cdrom: emulator.config.cdrom?.url || null,
-    fda: emulator.config.fda?.url || null,
-  }
-  
+
+  // const vmSpecs = {
+  //   ramMB: emulator.config.memory_size / (1024 * 1024),
+  //   hda: emulator.config.hda?.url || null,
+  //   cdrom: emulator.config.cdrom?.url || null,
+  //   fda: emulator.config.fda?.url || null,
+  // };
+
   const metadata = {
     startTime: startTime,
     vmSpecs: vmSpecs,
-    inputSequence: inputTracker.events
-  }
+    inputSequence: inputTracker.events,
+  };
   const encoded = MessagePack.encode(metadata);
-  
+
   dirHandle = await window.showDirectoryPicker();
-  const fileHandle = await dirHandle.getFileHandle("metadata.msgpack", { create: true });
+  const fileHandle = await dirHandle.getFileHandle("metadata.msgpack", {
+    create: true,
+  });
   const writable = await fileHandle.createWritable();
   await writable.write(encoded);
   await writable.close();
-  
+
   console.warn("Metadata saved!");
 }
 
