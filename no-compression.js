@@ -24,7 +24,29 @@ async function saveUncompressedStates(intervalMs, numSaves) {
   console.warn("All files saved!");
 }
 
-async function saveUncompressed
+async function saveStatesWithMetadata(intervalMs, numSaves) {
+  let dirHandle = await window.showDirectoryPicker();
+  
+  // input saving code created with chatGPT
+  const vmInputEvents = [];
+
+  // Mouse move
+  emulator.mouse_adapter.mousemove = function(x, y) {
+      vmInputEvents.push({ type: "mouse_move", dx: x, dy: y, t: Date.now() });
+      return origMouseMove(x, y);
+  };
+
+  // Mouse button
+  emulator.mouse_adapter.mouse_button = function(button, is_pressed) {
+      vmInputEvents.push({ type: "mouse_button", button, is_pressed, t: Date.now() });
+      return origMouseButton(button, is_pressed);
+  };
+
+  // Keyboard scancode
+  emulator.bus.register("keyboard-code", function(code) {
+      vmInputEvents.push({ type: "key_scancode", code, t: Date.now() });
+  });
+}
 
 //change interval and number of states if wanted
 saveUncompressedStates(1000, 10)
