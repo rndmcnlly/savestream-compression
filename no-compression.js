@@ -1,5 +1,9 @@
 /* globals emulator, MessagePack */
 
+/*
+This script is intended to be pasted into the developer tools while browsing the v86 debug.html website.
+*/
+
 function loadScript(url) {
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
