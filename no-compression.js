@@ -10,7 +10,17 @@ async function saveUncompressedStates(intervalMs, numSaves) {
     const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
     const writable = await fileHandle.createWritable();
     
+    const buffer = '' // PUT ACTUAL SAVE_STATE FUNCTION HERE
     
+    await writable.write(buffer);
+    await writable.close();
+    
+    console.log(`Saved ${fileName}`);
+    await sleep(intervalMs);
   }
+  
+  console.log("All files saved!");
 }
+
+
  
