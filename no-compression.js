@@ -108,13 +108,13 @@ async function saveStateLoop(intervalMs, numSaves, dirHandle) {
   }
 }
 
-async function saveUncompressedStates(intervalMs) {
+async function saveUncompressedStates(intervalMs, numSaves) {
   let dirHandle = await window.showDirectoryPicker();
   await saveStateLoop(intervalMs, numSaves, dirHandle);
   console.warn("All files saved!");
 }
 
-async function saveStatesWithMetadata(intervalMs) {
+async function saveStatesWithMetadata(intervalMs, numSaves) {
   let dirHandle = await window.showDirectoryPicker();
 
   const startTime = new Date().toISOString(); //saves in YYYY-MM-DDtime format
@@ -126,7 +126,6 @@ async function saveStatesWithMetadata(intervalMs) {
 
   // emulator.settings is from added line 2064 in main.js 
   const vmSpecs = emulator.settings;
-  
   const metadata = {
     startTime: startTime,
     vmSpecs: vmSpecs,
@@ -147,4 +146,6 @@ async function saveStatesWithMetadata(intervalMs) {
 
 //change interval and number of states if wanted
 //saveUncompressedStates(1000, 10)
-//saveStatesWithMetadata(1000, 10);
+
+
+saveStatesWithMetadata(1000, 10);
