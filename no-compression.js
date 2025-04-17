@@ -1,3 +1,5 @@
+/* globals emulator */
+
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -10,17 +12,19 @@ async function saveUncompressedStates(intervalMs, numSaves) {
     const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
     const writable = await fileHandle.createWritable();
     
-    const buffer = emulator.save_state()
+    const buffer = await emulator.save_state()
     
     await writable.write(buffer);
     await writable.close();
     
-    console.log(`Saved ${fileName}`);
+    console.warn(`Saved ${fileName}`);
     await sleep(intervalMs);
   }
   
-  console.log("All files saved!");
+  console.warn("All files saved!");
 }
 
+async function saveUncompressed
 
- 
+//change interval and number of states if wanted
+saveUncompressedStates(1000, 10)
