@@ -10,7 +10,7 @@ async function saveUncompressedStates(intervalMs, numSaves) {
     const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
     const writable = await fileHandle.createWritable();
     
-    const buffer = '' // PUT ACTUAL SAVE_STATE FUNCTION HERE
+    const buffer = emulator.save_state()
     
     await writable.write(buffer);
     await writable.close();
