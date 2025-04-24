@@ -32,14 +32,14 @@ window.onload = function()
       let timestamp = Date.now();
       let item = {event, timestamp};
       console.log("appending item:", item);
-      stimulus.append(item);
+      stimulus.push(item);
     }
   
     function startInputRecording() {
       stimulus = [];
       startTime = Date.now();
       
-      emulator.bus.register("keyboard-code", function(code) {
+      emulator.v86.cpu.devices.ps2.bus.register("keyboard-code", function(code) {
         let event = {name: "keyboard-code", code};
         appendStimulusEvent(event);
       })
@@ -69,9 +69,9 @@ window.onload = function()
         
         let webVttStamp = formatWebVttTimestamp(timeElapsed);
         
-        fileLines.append(`${webVttStamp} -- ${webVttStamp}`);
-        fileLines.append(JSON.stringify(event));
-        fileLines.append("");
+        fileLines.push(`${webVttStamp} -- ${webVttStamp}`);
+        fileLines.push(JSON.stringify(event));
+        fileLines.push("");
       }
       
       /*
