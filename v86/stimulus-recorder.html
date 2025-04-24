@@ -26,13 +26,47 @@ window.onload = function()
   
   
     let stimulus = undefined;
+  
+    function appendStimulusEvent(event) {
+      let timestamp = Date.now();
+      let item = {event, timestamp};
+      console.log("appending item:", item);
+      stimulus.append(item);
+    }
+  
     function startInputRecording() {
       stimulus = [];
-      emulator.bus.register("keyboard-code",)
+      
+      emulator.bus.register("keyboard-code", function(code) {
+        let event = {name: "keyboard-code", code};
+        appendStimulusEvent(event);
+      })
     }
   
     function finishInputRecording() {
+      // todo:construct a webvtt file contents as a string
+      let fileContent = "meow";
       
+      /*
+      WEBVTT
+      
+      00:00.000 --> 00:00.000
+      {"event: }
+      */
+      
+      
+      // todo: save this file to the user's system
+      //  we can do this by making a blob link tha tthey cna click if they want
+      
+      let encoder = new TextEncoder();
+      let file = new File([encoder.encode(fileContent)], "stimulus.vtt", {type: "text/vtt"});
+      let url = URL.createObjectURL(file);
+      
+      let a = document.createElement("a");
+      a.href = url;
+      a.innerHTML = url;
+      document.getElementById("recording_links").append(a);
+      // expected mimetype: text/vtt
     }
   
   
@@ -54,6 +88,8 @@ window.onload = function()
 </script>
 
 <input id="record_input" type="button" value="Record inputs">
+<div id="recording_links">
+</div>
 <hr>
 
 <!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
