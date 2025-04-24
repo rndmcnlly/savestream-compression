@@ -1,0 +1,79 @@
+WEBVTT
+
+00:00:01.234 -- 00:00:01.234
+{"event":{"name":"keyboard-code","code":32},"timestamp":1745524184688}
+
+00:00:01.248 -- 00:00:01.248
+{"event":{"name":"keyboard-code","code":25},"timestamp":1745524184702}
+
+00:00:01.302 -- 00:00:01.302
+{"event":{"name":"keyboard-code","code":24},"timestamp":1745524184756}
+
+00:00:01.357 -- 00:00:01.357
+{"event":{"name":"keyboard-code","code":153},"timestamp":1745524184811}
+
+00:00:01.362 -- 00:00:01.362
+{"event":{"name":"keyboard-code","code":23},"timestamp":1745524184816}
+
+00:00:01.405 -- 00:00:01.405
+{"event":{"name":"keyboard-code","code":33},"timestamp":1745524184859}
+
+00:00:01.407 -- 00:00:01.407
+{"event":{"name":"keyboard-code","code":152},"timestamp":1745524184861}
+
+00:00:01.420 -- 00:00:01.420
+{"event":{"name":"keyboard-code","code":151},"timestamp":1745524184874}
+
+00:00:01.422 -- 00:00:01.422
+{"event":{"name":"keyboard-code","code":36},"timestamp":1745524184876}
+
+00:00:01.423 -- 00:00:01.423
+{"event":{"name":"keyboard-code","code":160},"timestamp":1745524184877}
+
+00:00:01.468 -- 00:00:01.468
+{"event":{"name":"keyboard-code","code":161},"timestamp":1745524184922}
+
+00:00:01.482 -- 00:00:01.482
+{"event":{"name":"keyboard-code","code":164},"timestamp":1745524184936}
+
+00:00:01.586 -- 00:00:01.586
+{"event":{"name":"keyboard-code","code":32},"timestamp":1745524185040}
+
+00:00:01.690 -- 00:00:01.690
+{"event":{"name":"keyboard-code","code":160},"timestamp":1745524185144}
+
+00:00:02.879 -- 00:00:02.879
+{"event":{"name":"keyboard-code","code":34},"timestamp":1745524186333}
+
+00:00:02.949 -- 00:00:02.949
+{"event":{"name":"keyboard-code","code":162},"timestamp":1745524186403}
+
+00:00:03.177 -- 00:00:03.177
+{"event":{"name":"keyboard-code","code":36},"timestamp":1745524186631}
+
+00:00:03.277 -- 00:00:03.277
+{"event":{"name":"keyboard-code","code":164},"timestamp":1745524186731}
+
+00:00:03.529 -- 00:00:03.529
+{"event":{"name":"keyboard-code","code":32},"timestamp":1745524186983}
+
+00:00:03.612 -- 00:00:03.612
+{"event":{"name":"keyboard-code","code":160},"timestamp":1745524187066}
+
+00:00:03.740 -- 00:00:03.740
+{"event":{"name":"keyboard-code","code":38},"timestamp":1745524187194}
+
+00:00:03.823 -- 00:00:03.823
+{"event":{"name":"keyboard-code","code":166},"timestamp":1745524187277}
+
+00:00:03.824 -- 00:00:03.824
+{"event":{"name":"keyboard-code","code":31},"timestamp":1745524187278}
+
+00:00:03.887 -- 00:00:03.887
+{"event":{"name":"keyboard-code","code":159},"timestamp":1745524187341}
+
+00:00:04.989 -- 00:00:04.989
+{"event":{"name":"keyboard-code","code":38},"timestamp":1745524188443}
+
+00:00:05.110 -- 00:00:05.110
+{"event":{"name":"keyboard-code","code":166},"timestamp":1745524188564}
