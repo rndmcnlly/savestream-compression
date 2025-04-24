@@ -1,0 +1,63 @@
+<!doctype html>
+<title>Stimulus Recorder</title>
+
+<script src="libv86.js"></script>
+<script>
+"use strict";
+
+window.onload = function()
+{
+    const emulator = new V86({
+        wasm_path: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/v86.wasm?v=1744920923071",
+        memory_size: 32 * 1024 * 1024,
+        vga_memory_size: 2 * 1024 * 1024,
+        screen_container: document.getElementById("screen_container"),
+        bios: {
+            url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/seabios.bin.file?v=1744921233679",
+        },
+        vga_bios: {
+            url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/vgabios.bin.file?v=1744921248127",
+        },
+        cdrom: {
+            url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/linux.iso.file?v=1744921520106",
+        },
+        autostart: true,
+    });
+  
+  
+    let stimulus = undefined;
+    function startInputRecording() {
+      stimulus = [];
+      emulator.bus.register("keyboard-code",)
+    }
+  
+    function finishInputRecording() {
+      
+    }
+  
+  
+  
+    let isRecording = false;
+    const record_input = document.getElementById("record_input");    
+    record_input.onclick = async function() {
+      if (isRecording) {
+        isRecording = false;
+        record_input.value = "Record inputs";
+        finishInputRecording();
+      } else {
+        isRecording = true;
+        record_input.value = "Stop recording";
+        startInputRecording();
+      }
+    };
+};
+</script>
+
+<input id="record_input" type="button" value="Record inputs">
+<hr>
+
+<!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
+<div id="screen_container">
+    <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
+    <canvas style="display: none"></canvas>
+</div>
