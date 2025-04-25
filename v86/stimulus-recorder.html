@@ -67,9 +67,7 @@ window.onload = function()
         let timestamp = event.timestamp;
         let timeElapsed = timestamp - startTime;
         
-        let webVttStamp = formatWebVttTimestamp(timeElapsed);
-        
-        fileLines.push(`${webVttStamp} -- ${webVttStamp}`);
+        fileLines.push(`${formatWebVttTimestamp(timeElapsed)} --> ${formatWebVttTimestamp(timeElapsed+1)}`);
         fileLines.push(JSON.stringify(event));
         fileLines.push("");
       }
