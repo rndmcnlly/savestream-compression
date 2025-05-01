@@ -41,7 +41,7 @@
   "0x28": "' (single quote) pressed",
   "0x29": "` (back tick) pressed",
   "0x2A": "left shift pressed",
-  "0x2B": "\\\\ pressed",
+  "0x2B": "\\ pressed",
   "0x2C": "Z pressed",
   "0x2D": "X pressed",
   "0x2E": "C pressed",
