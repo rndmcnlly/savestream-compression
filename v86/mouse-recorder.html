@@ -1,65 +1,81 @@
-<!doctype html>
+<!DOCTYPE html>
 <title>Stimulus Recorder</title>
 
 <script src="libv86.js"></script>
 <script>
-"use strict";
+  "use strict";
 
-window.onload = function()
-{
+  window.onload = function () {
     const emulator = new V86({
-        wasm_path: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/v86.wasm?v=1744920923071",
-        memory_size: 32 * 1024 * 1024,
-        vga_memory_size: 2 * 1024 * 1024,
-        screen_container: document.getElementById("screen_container"),
-        bios: {
-            url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/seabios.bin.file?v=1744921233679",
-        },
-        vga_bios: {
-            url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/vgabios.bin.file?v=1744921248127",
-        },
-        cdrom: {
-            //url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/linux.iso.file?v=1744921520106",
-          url: "https://cdn.glitch.me/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/dsl-4.11.rc2.iso.file?v=1746126977744",
-        },
-        autostart: true,
-        initial_state: {
-          url: "https://cdn.glitch.me/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/v86state-dsl.bin.file?v=1746127152570",
-        }
+      wasm_path:
+        "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/v86.wasm?v=1744920923071",
+      memory_size: 32 * 1024 * 1024,
+      vga_memory_size: 2 * 1024 * 1024,
+      screen_container: document.getElementById("screen_container"),
+      bios: {
+        url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/seabios.bin.file?v=1744921233679",
+      },
+      vga_bios: {
+        url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/vgabios.bin.file?v=1744921248127",
+      },
+      cdrom: {
+        //url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/linux.iso.file?v=1744921520106",
+        url: "https://cdn.glitch.me/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/dsl-4.11.rc2.iso.file?v=1746126977744",
+      },
+      autostart: true,
+      initial_state: {
+        url: "https://cdn.glitch.me/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/v86state-dsl.bin.file?v=1746127152570",
+      },
     });
-  
+
     let keycodes = {};
-    fetch('ps2-scancodes.json')
-      .then(res => res.json())
-      .then(json => keycodes = json);
-  
+    fetch("ps2-scancodes.json")
+      .then((res) => res.json())
+      .then((json) => (keycodes = json));
+
     let startTime = undefined;
     let stimulus = undefined;
-  
+
     function appendStimulusEvent(event) {
-      let timestamp = Date.now();
-      let item = {event, timestamp};
-      console.log("appending item:", item);
-      stimulus.push(item);
+      if (isRecording) {
+        let timestamp = Date.now();
+        let item = { event, timestamp };
+        console.log("appending item:", item);
+        stimulus.push(item);
+      }
     }
-  
+
+    emulator.bus.register("emulator-loaded", function () {
+      emulator.v86.cpu.devices.ps2.bus.register(
+        "keyboard-code",
+        function (code) {
+          let hexcode = "0x" + code.toString(16).toUpperCase();
+          appendStimulusEvent({
+            name: "keyboard-code",
+            code: hexcode,
+            description: keycodes[hexcode],
+          });
+        }
+      );
+
+      emulator.v86.cpu.devices.ps2.bus.register("mouse-click", function (data) {
+        appendStimulusEvent({
+          name: "mouse-click",
+          coordinates: [data[0], data[1]],
+        });
+      });
+
+      emulator.v86.cpu.devices.ps2.bus.register("mouse-delta", function (data) {
+        appendStimulusEvent({
+          name: "mouse-delta",
+          coordinates: [data[0], data[1]],
+        });
+      });
+    });
+
     function startInputRecording() {
       stimulus = [];
       startTime = Date.now();
-      let prevMouseDelta = null
-      
-      emulator.v86.cpu.devices.ps2.bus.register("keyboard-code", function(code) {
-        let hexcode = "0x" + code.toString(16).toUpperCase();
-        appendStimulusEvent({name: "keyboard-code", code: hexcode, description: keycodes[hexcode]});
-      })
-      
-      emulator.v86.cpu.devices.ps2.bus.register("mouse-click", function(data) {
-        appendStimulusEvent({name: "mouse-click", coordinates: [data[0], data[1]]});
-      })
-      
-      emulator.v86.cpu.devices.ps2.bus.register("mouse-delta", function(data) {
-        appendStimulusEvent({name: "mouse-delta", coordinates: [data[0], data[1]]});
-      })
     }
 
     function formatWebVttTimestamp(ms) {
@@ -71,24 +87,31 @@ window.onload = function()
       const hours = Math.floor(totalMinutes / 60);
 
       // Pad with leading zeros where needed
-      const pad = (n, z = 2) => String(n).padStart(z, '0');
+      const pad = (n, z = 2) => String(n).padStart(z, "0");
 
-      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${pad(milliseconds, 3)}`;
+      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${pad(
+        milliseconds,
+        3
+      )}`;
     }
-  
+
     function finishInputRecording() {
       // todo:construct a webvtt file contents as a string
       let fileLines = ["WEBVTT", ""];
-      
+
       for (let event of stimulus) {
         let timestamp = event.timestamp;
         let timeElapsed = timestamp - startTime;
-        
-        fileLines.push(`${formatWebVttTimestamp(timeElapsed)} --> ${formatWebVttTimestamp(timeElapsed+1)}`);
+
+        fileLines.push(
+          `${formatWebVttTimestamp(timeElapsed)} --> ${formatWebVttTimestamp(
+            timeElapsed + 1
+          )}`
+        );
         fileLines.push(JSON.stringify(event));
         fileLines.push("");
       }
-      
+
       /*
       WEBVTT
       
@@ -98,19 +121,18 @@ window.onload = function()
       00:00:01.100 --> 00:00:01.100
       {"event": {"name": "keyboard-code", "code": 66}, "timestamp": 2943843785 }
       */
-      
-      
+
       // figure out the ...
-      
-      
+
       const fileContent = fileLines.join("\n");
-      
 
       // use fileContent to construct a file
       const encoder = new TextEncoder();
       const filename = "stimulus.vtt";
-      const file = new File([encoder.encode(fileContent)], filename, {type: "text/vtt"});
-      
+      const file = new File([encoder.encode(fileContent)], filename, {
+        type: "text/vtt",
+      });
+
       // allow the user to click to download the file
       const url = URL.createObjectURL(file);
       const a = document.createElement("a");
@@ -119,12 +141,10 @@ window.onload = function()
       a.download = filename;
       document.getElementById("recording_links").append(a);
     }
-  
-  
-  
+
     let isRecording = false;
-    const record_input = document.getElementById("record_input");    
-    record_input.onclick = async function() {
+    const record_input = document.getElementById("record_input");
+    record_input.onclick = async function () {
       if (isRecording) {
         isRecording = false;
         record_input.value = "Record inputs";
@@ -135,16 +155,15 @@ window.onload = function()
         startInputRecording();
       }
     };
-};
+  };
 </script>
 
-<input id="record_input" type="button" value="Record inputs">
-<div id="recording_links">
-</div>
-<hr>
+<input id="record_input" type="button" value="Record inputs" />
+<div id="recording_links"></div>
+<hr />
 
 <!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
 <div id="screen_container">
-    <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
-    <canvas style="display: none"></canvas>
+  <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
+  <canvas style="display: none"></canvas>
 </div>
