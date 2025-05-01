@@ -1,45 +1,108 @@
-<!doctype html>
+<!DOCTYPE html>
 <title>Save and restore</title>
 
 <script src="libv86.js"></script>
 <script>
-"use strict";
+  "use strict";
 
-window.onload = function()
-{
-    var emulator = window.emulator = new V86({
-        wasm_path: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/v86.wasm?v=1744920923071",
-        memory_size: 32 * 1024 * 1024,
-        vga_memory_size: 2 * 1024 * 1024,
-        screen_container: document.getElementById("screen_container"),
-        bios: {
-            url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/seabios.bin.file?v=1744921233679",
-        },
-        vga_bios: {
-            url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/vgabios.bin.file?v=1744921248127",
-        },
-        cdrom: {
-            url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/linux.iso.file?v=1744921520106",
-        },
-        autostart: true,
-    });
-    let is_recording = false;
+  window.onload = function()
+  {
+      var emulator = window.emulator = new V86({
+          wasm_path: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/v86.wasm?v=1744920923071",
+          memory_size: 32 * 1024 * 1024,
+          vga_memory_size: 2 * 1024 * 1024,
+          screen_container: document.getElementById("screen_container"),
+          bios: {
+              url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/seabios.bin.file?v=1744921233679",
+          },
+          vga_bios: {
+              url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/vgabios.bin.file?v=1744921248127",
+          },
+          cdrom: {
+              url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/linux.iso.file?v=1744921520106",
+          },
+          autostart: true,
+      });
 
-    document.getElementById("record").onclick = async function()
-    {
-        if (is_recording) {
-          
-        } else {
-          
+      function startRecording() {
+        recordedChunks = [];
+        isRecording = true;
+        recordingStartTime = Date.now();
+
+        // Get media stream from canvas
+        const stream = canvas.captureStream(30); // 30 FPS
+
+        // Create MediaRecorder
+        mediaRecorder = new MediaRecorder(stream, {
+            mimeType: 'video/webm;codecs=vp9',
+            videoBitsPerSecond: 2500000 // 2.5 Mbps
+        });
+
+        // Handle data available event
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+
+        // Handle recording stop
+        mediaRecorder.onstop = () => {
+            // Create a blob from the recorded chunks
+            const blob = new Blob(recordedChunks, {
+                type: 'video/mp4'
+            });
+
+            // Create a URL for the blob
+            const url = URL.createObjectURL(blob);
+
+            // Create a download link
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'rotating-triangle.mp4';
+
+            // Add to document, click it, and remove it
+            document.body.appendChild(a);
+            a.click();
+
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                statusEl.textContent = '¡Grabación completada y descargada! (Recording completed and downloaded!)';
+            }, 100);
+        };
+
+        // Start recording
+        mediaRecorder.start(100); // Collect data in 100ms chunks
+        statusEl.textContent = '正在 录制... (zhèng zài lù zhì... - Recording in progress...)';
+        startBtn.disabled = true;
+    }
+
+    function stopRecording() {
+        if (mediaRecorder && isRecording) {
+            isRecording = false;
+            mediaRecorder.stop();
+            statusEl.textContent = 'Procesando el video... (Processing the video...)';
         }
-    };
+    }
+
+      let is_recording = false;
+      document.getElementById("record").onclick = async function()
+      {
+          if (is_recording) {
+
+          } else {
+
+          }
+      };
 </script>
 
-<input id="record" type="button" value="Record video">
-<hr>
+<input id="record" type="button" value="Record video" />
+<hr />
 
 <!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
 <div id="screen_container">
-    <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
-    <canvas id="emulator-canvas" style="display: none"></canvas>
+  <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
+  <canvas id="emulator-canvas" style="display: none"></canvas>
 </div>
