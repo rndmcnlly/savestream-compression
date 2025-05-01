@@ -24,6 +24,7 @@ window.onload = function()
         autostart: true,
     });
   
+    const keycodes = require("./ps2-scancodes.json");
   
     let startTime = undefined;
     let stimulus = undefined;
@@ -40,7 +41,8 @@ window.onload = function()
       startTime = Date.now();
       
       emulator.v86.cpu.devices.ps2.bus.register("keyboard-code", function(code) {
-        let event = {name: "keyboard-code", code: code.toString(16)};
+        let hexcode = "0x" + code.toString(16).toUpperCase();
+        let event = {name: "keyboard-code", code: hexcode, description: keycodes[hexcode]};
         appendStimulusEvent(event);
       })
       
