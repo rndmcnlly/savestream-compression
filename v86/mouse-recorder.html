@@ -18,8 +18,9 @@ window.onload = function()
         vga_bios: {
             url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/vgabios.bin.file?v=1744921248127",
         },
-        cdrom: {
-            url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/linux.iso.file?v=1744921520106",
+        hda: {
+                url: "https://i.copy.sh/windows98.img", 
+                async: true
         },
         autostart: true,
     });
@@ -47,6 +48,10 @@ window.onload = function()
         let hexcode = "0x" + code.toString(16).toUpperCase();
         let event = {name: "keyboard-code", code: hexcode, description: keycodes[hexcode]};
         appendStimulusEvent(event);
+      })
+      
+      emulator.v86.cpu.device.ps2.bus.register("mouse-click", function(data) {
+        console.log("mouse clicked", data)
       })
     }
 
