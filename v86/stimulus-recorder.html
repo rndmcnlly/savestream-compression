@@ -24,7 +24,13 @@ window.onload = function()
         autostart: true,
     });
   
-    const keycodes = require("./ps2-scancodes.json");
+    const keycodes = {}
+    fetch('ps2-scancodes.json')
+      .then(res => res.json())
+      .then(json => {
+          keycodes = json;
+          console.log(keycodes["0x01"]); // → "escape pressed"
+    });
   
     let startTime = undefined;
     let stimulus = undefined;
