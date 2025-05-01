@@ -18,11 +18,14 @@ window.onload = function()
         vga_bios: {
             url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/vgabios.bin.file?v=1744921248127",
         },
-        hda: {
-                url: "https://i.copy.sh/windows98_state.bin.zst",  //doesnt work due to access control checks
-                async: true
+        cdrom: {
+            //url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/linux.iso.file?v=1744921520106",
+          url: "https://cdn.glitch.me/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/dsl-4.11.rc2.iso.file?v=1746126977744",
         },
         autostart: true,
+        initial_state: {
+          url: "https://cdn.glitch.me/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/v86state-dsl.bin.file?v=1746127152570",
+        }
     });
   
     let keycodes = {};
@@ -47,22 +50,15 @@ window.onload = function()
       
       emulator.v86.cpu.devices.ps2.bus.register("keyboard-code", function(code) {
         let hexcode = "0x" + code.toString(16).toUpperCase();
-        let event = {name: "keyboard-code", code: hexcode, description: keycodes[hexcode]};
-        appendStimulusEvent(event);
+        appendStimulusEvent({name: "keyboard-code", code: hexcode, description: keycodes[hexcode]});
       })
       
-      emulator.v86.cpu.device.ps2.bus.register("mouse-click", function(data) {
-        console.log("mouse clicked", data);
-        let event = {name: "mouse-click", coordinates: (data[0], data[1])};
-        appendStimulusEvent(event);
+      emulator.v86.cpu.devices.ps2.bus.register("mouse-click", function(data) {
+        appendStimulusEvent({name: "mouse-click", coordinates: [data[0], data[1]]});
       })
       
-      emulator.v86.cpu.device.ps2.bus.register("mouse-delta", function(data) {
-        if (prevMouseDelta != data) {
-          console.log(data);
-          let event = {name: "mouse-delta", coordinates: (data[0], data[1])};
-          prevMouseDelta = data;
-        }
+      emulator.v86.cpu.devices.ps2.bus.register("mouse-delta", function(data) {
+        appendStimulusEvent({name: "mouse-delta", coordinates: [data[0], data[1]]});
       })
     }
 
