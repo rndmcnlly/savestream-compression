@@ -25,78 +25,65 @@
       });
     
       let canvas = document.getElementById("emulator-canvas")
+      let recordedChunks = [];
+      let recordingStartTime;
+      let mediaRecorder;
 
       function startRecording() {
         recordedChunks = [];
         isRecording = true;
         recordingStartTime = Date.now();
-
-        // Get media stream from canvas
-        const stream = canvas.captureStream(30); // 30 FPS
-
-        // Create MediaRecorder
-        mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'video/webm;codecs=vp9',
-            videoBitsPerSecond: 2500000 // 2.5 Mbps
-        });
-
-        // Handle data available event
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                recordedChunks.push(event.data);
-            }
-        };
-
-        // Handle recording stop
-        mediaRecorder.onstop = () => {
-            // Create a blob from the recorded chunks
-            const blob = new Blob(recordedChunks, {
-                type: 'video/mp4'
-            });
-
-            // Create a URL for the blob
-            const url = URL.createObjectURL(blob);
-
-            // Create a download link
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'rotating-triangle.mp4';
-
-            // Add to document, click it, and remove it
-            document.body.appendChild(a);
-            a.click();
-
-            // Clean up
-            setTimeout(() => {
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-                statusEl.textContent = '¡Grabación completada y descargada! (Recording completed and downloaded!)';
-            }, 100);
-        };
-
-        // Start recording
-        mediaRecorder.start(100); // Collect data in 100ms chunks
-        statusEl.textContent = '正在 录制... (zhèng zài lù zhì... - Recording in progress...)';
-        startBtn.disabled = true;
-    }
-
-    function stopRecording() {
-        if (mediaRecorder && isRecording) {
-            isRecording = false;
-            mediaRecorder.stop();
-            statusEl.textContent = 'Procesando el video... (Processing the video...)';
-        }
-    }
-
-    let is_recording = false;
-    document.getElementById("record").onclick = async function() {
-      if (is_recording) {
         
+        const stream = canvas.captureStream(30); // 30 FPS
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'video/webm;codecs=vp9',
+          videoBitsPerSecond: 2500000
+        });
+        
+        mediaRecorder.ondataavailable = event => {
+          if (event.data.size > 0) recordedChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = 'response.mp4';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            console.log('Recording completed and downloaded!');
+          }, 100);
+        };
+        
+        mediaRecorder.start(100);
+        console.log('Recording in progress...');
+      }
+      
+      function stopRecording() {
+        if (mediaRecorder && isRecording) {
+          isRecording = false;
+          mediaRecorder.stop();
+          console.log('Processing the video...');
+        }
+      }
+    
+    let isRecording = false;
+    let record_button = document.getElementById("record")
+    record_button.onclick = async function() {
+      if (isRecording) {
+        stopRecording();
+        record_button.value = "Record video";
       } else {
-
+        startRecording();
+        record_button.value = "Stop recording";
       }
     };
+  }
 </script>
 
 <input id="record" type="button" value="Record video" />
