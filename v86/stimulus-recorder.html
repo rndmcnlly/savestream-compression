@@ -102,7 +102,7 @@ window.onload = function()
       const filename = "stimulus.vtt";
       const file = new File([encoder.encode(fileContent)], filename, {type: "text/vtt"});
       
-      // allow the user to click to downlod the file
+      // allow the user to click to download the file
       const url = URL.createObjectURL(file);
       const a = document.createElement("a");
       a.href = url;
