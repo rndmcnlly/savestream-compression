@@ -40,7 +40,7 @@ window.onload = function()
       startTime = Date.now();
       
       emulator.v86.cpu.devices.ps2.bus.register("keyboard-code", function(code) {
-        let event = {name: "keyboard-code", code};
+        let event = {name: "keyboard-code", code: code.toString(16)};
         appendStimulusEvent(event);
       })
       
