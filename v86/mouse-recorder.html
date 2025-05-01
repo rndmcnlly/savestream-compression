@@ -43,6 +43,7 @@ window.onload = function()
     function startInputRecording() {
       stimulus = [];
       startTime = Date.now();
+      let prevMouseDelta = null
       
       emulator.v86.cpu.devices.ps2.bus.register("keyboard-code", function(code) {
         let hexcode = "0x" + code.toString(16).toUpperCase();
@@ -51,7 +52,17 @@ window.onload = function()
       })
       
       emulator.v86.cpu.device.ps2.bus.register("mouse-click", function(data) {
-        console.log("mouse clicked", data)
+        console.log("mouse clicked", data);
+        let event = {name: "mouse-click", coordinates: (data[0], data[1])};
+        appendStimulusEvent(event);
+      })
+      
+      emulator.v86.cpu.device.ps2.bus.register("mouse-delta", function(data) {
+        if (prevMouseDelta != data) {
+          console.log(data);
+          let event = {name: "mouse-delta", coordinates: (data[0], data[1])};
+          prevMouseDelta = data;
+        }
       })
     }
 
