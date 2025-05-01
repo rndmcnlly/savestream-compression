@@ -24,7 +24,7 @@ window.onload = function()
         autostart: true,
     });
   
-    const keycodes = {}
+    let keycodes = {}
     fetch('ps2-scancodes.json')
       .then(res => res.json())
       .then(json => {
