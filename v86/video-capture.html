@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>Save and restore</title>
+<title>Video Capture</title>
 
 <script src="libv86.js"></script>
 <script>
@@ -23,6 +23,8 @@
           },
           autostart: true,
       });
+    
+      let canvas = document.getElementById("emulator-canvas")
 
       function startRecording() {
         recordedChunks = [];
@@ -87,15 +89,14 @@
         }
     }
 
-      let is_recording = false;
-      document.getElementById("record").onclick = async function()
-      {
-          if (is_recording) {
+    let is_recording = false;
+    document.getElementById("record").onclick = async function() {
+      if (is_recording) {
+        
+      } else {
 
-          } else {
-
-          }
-      };
+      }
+    };
 </script>
 
 <input id="record" type="button" value="Record video" />
