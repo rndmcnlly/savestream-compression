@@ -34,41 +34,73 @@
     let saveButton = document.getElementById("save");
     let albumCreated = false;
     let recording = false;
-    let counter = 0;
     let currentFolder = null;
+    let guid = null;
+    let startedRecording = null;
 
-    async function createAlbum() {
-      dirHandle = await window.showDirectoryPicker();
-      const manifestHandle = await dirHandle.getFileHandle("manifest.json", {
-        create: true,
-      });
-      const writable = await manifestHandle.createWritable();
-
-      const jsonString = JSON.stringify(specs, null, 2);
-      await writable.write(jsonString);
-      await writable.close();
-    }
+async function createAlbum() {
+  dirHandle = await window.showDirectoryPicker();
+  
+  try {
+    // Try to get the existing manifest file
+    await dirHandle.getFileHandle("manifest.json");
+    console.log("Using existing manifest");
+  } catch (error) {
+    // If it doesn't exist, create a new one
+    const manifestHandle = await dirHandle.getFileHandle("manifest.json", {
+      create: true,
+    });
+    const writable = await manifestHandle.createWritable();
+    const initialManifest = {
+      "machine_spec": specs,
+      "clips": []
+    };
+    const jsonString = JSON.stringify(initialManifest, null, 2);
+    await writable.write(jsonString);
+    await writable.close();
+    console.log("Created new manifest");
+  }
+  
+  albumCreated = true;
+}
 
     async function saveRecording() {
+      guid = crypto.randomUUID();
       const newHandle = await dirHandle.getDirectoryHandle(
-        `recording${counter}`,
+        guid,
         { create: true }
       );
       currentFolder = newHandle;
-      counter++;
+      startedRecording = new Date().toISOString();
     }
 
     async function stopRecording() {
-      const stimulusHandle = await currentFolder.getFileHandle("stimulus.txt", {
+      const stimulusHandle = await currentFolder.getFileHandle("stimulus.vtt", {
         create: true,
       });
-      const responseHandle = await currentFolder.getFileHandle("response.txt", {
+      const responseHandle = await currentFolder.getFileHandle("response.mp4", {
         create: true,
       });
       const saveStreamHandle = await currentFolder.getFileHandle(
-        "savestream.txt",
+        "savestream.msgpack",
         { create: true }
       );
+      
+      const manifestHandle = await dirHandle.getFileHandle("manifest.json");
+      const manifestFile = await manifestHandle.getFile();
+      const manifestContent = await manifestFile.text();
+      const manifest = JSON.parse(manifestContent);
+
+      // Add new clip information to the manifest
+      manifest.clips.push({
+        id: guid,
+        timestamp: startedRecording,
+      });
+
+      // Write updated manifest back to file
+      const writableManifest = await manifestHandle.createWritable();
+      await writableManifest.write(JSON.stringify(manifest, null, 2));
+      await writableManifest.close();
     }
 
     saveButton.addEventListener("click", async () => {
@@ -82,12 +114,10 @@
         await saveRecording();
         recording = true;
         saveButton.value = "Stop recording";
-        console.log(`saving recording${counter-1}`);
       } else {
         await stopRecording();
         recording = false;
         saveButton.value = "Save recording";
-        console.log(`recording${counter-1} saved`);
       }
     });
   };
