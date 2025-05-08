@@ -1,76 +1,99 @@
-<!doctype html>
+<!DOCTYPE html>
 <title>Album File System</title>
 
 <script src="libv86.js"></script>
 <script>
-"use strict";
+  "use strict";
 
-window.onload = function() {
-      var emulator = window.emulator = new V86({
-        wasm_path: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/v86.wasm?v=1744920923071",
-        memory_size: 32 * 1024 * 1024,
-        vga_memory_size: 2 * 1024 * 1024,
-        screen_container: document.getElementById("screen_container"),
-        bios: {
-            url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/seabios.bin.file?v=1744921233679",
-        },
-        vga_bios: {
-            url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/vgabios.bin.file?v=1744921248127",
-        },
-        cdrom: {
-            //url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/linux.iso.file?v=1744921520106",
-          url: "https://cdn.glitch.me/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/dsl-4.11.rc2.iso.file?v=1746126977744",
-        },
-        autostart: true,
-        initial_state: {
-          url: "https://cdn.glitch.me/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/v86state-dsl.bin.file?v=1746127152570",
-        }
-    });
-  
-  let dirHandle = null;
-  let saveButton = document.getElementById("save");
-  let albumCreated = false;
-  let recording = false;
-  let counter = 0;
-  
-  async createAlbum() {
-    dirHandle = await window.showDirectoryPicker();
-    const manifestHandle = await dirHandle.getFileHandle('manifest.json', {create: true});
-    const writable = await manifestHandle.createWritable();
-    
-    const jsonString = JSON.stringify(emulator, null, 2);
-    await writable.write(jsonString);
-    await writable.close();
-    
-    let container = document.getElementById("buttons")
-    saveButton.textContent = "Save recording"
-  }
-  
-  async saveRecording() {
-    const newHandle = await dirHandle.getDirectoryHandle('recording')
-  }
-  
-  saveButton.addEventListener("click", async() => {
-      if (albumCreated = false) {
+  window.onload = function () {
+    let specs = {
+      wasm_path:
+        "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/v86.wasm?v=1744920923071",
+      memory_size: 32 * 1024 * 1024,
+      vga_memory_size: 2 * 1024 * 1024,
+      screen_container: document.getElementById("screen_container"),
+      bios: {
+        url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/seabios.bin.file?v=1744921233679",
+      },
+      vga_bios: {
+        url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/vgabios.bin.file?v=1744921248127",
+      },
+      cdrom: {
+        //url: "https://cdn.glitch.global/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/linux.iso.file?v=1744921520106",
+        url: "https://cdn.glitch.me/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/dsl-4.11.rc2.iso.file?v=1746126977744",
+      },
+      autostart: true,
+      initial_state: {
+        url: "https://cdn.glitch.me/89b5ee6b-7726-45cd-849e-7b3c80bb1a44/v86state-dsl.bin.file?v=1746127152570",
+      },
+    };
+
+    var emulator = (window.emulator = new V86(specs));
+
+    let dirHandle = null;
+    let saveButton = document.getElementById("save");
+    let albumCreated = false;
+    let recording = false;
+    let counter = 0;
+    let currentFolder = null;
+
+    async function createAlbum() {
+      dirHandle = await window.showDirectoryPicker();
+      const manifestHandle = await dirHandle.getFileHandle("manifest.json", {
+        create: true,
+      });
+      const writable = await manifestHandle.createWritable();
+
+      const jsonString = JSON.stringify(specs, null, 2);
+      await writable.write(jsonString);
+      await writable.close();
+    }
+
+    async function saveRecording() {
+      const newHandle = await dirHandle.getDirectoryHandle(
+        `recording${counter}`,
+        { create: true }
+      );
+      currentFolder = newHandle;
+    }
+
+    async function stopRecording() {
+      const stimulusHandle = await currentFolder.getFileHandle("stimulus.txt", {
+        create: true,
+      });
+      const responseHandle = await currentFolder.getFileHandle("response.txt", {
+        create: true,
+      });
+      const saveStreamHandle = await currentFolder.getFileHandle(
+        "savestream.txt",
+        { create: true }
+      );
+    }
+
+    saveButton.addEventListener("click", async () => {
+      console.log("clicked");
+      if (!albumCreated) {
         await createAlbum();
         albumCreated = true;
-      } else if (recording = false) {
-        recording = 
+        saveButton.textContent = "Save recording";
+      } else if (!recording) {
+        await saveRecording();
+        recording = true;
+      } else {
+        await stopRecording;
+        recording = false;
       }
-  })
-}
-
-
+    });
+  };
 </script>
 
 <div id="buttons">
-  <input id="save" type="button" value="Create album">
-  
+  <input id="save" type="button" value="Create album" />
 </div>
-<hr>
+<hr />
 
 <!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
 <div id="screen_container">
-    <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
-    <canvas style="display: none"></canvas>
+  <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
+  <canvas style="display: none"></canvas>
 </div>
