@@ -55,6 +55,7 @@
         { create: true }
       );
       currentFolder = newHandle;
+      counter++;
     }
 
     async function stopRecording() {
@@ -71,17 +72,22 @@
     }
 
     saveButton.addEventListener("click", async () => {
-      console.log("clicked");
       if (!albumCreated) {
+        console.log("creating album")
         await createAlbum();
         albumCreated = true;
-        saveButton.textContent = "Save recording";
+        saveButton.value = "Save recording";
+        console.log("album created")
       } else if (!recording) {
         await saveRecording();
         recording = true;
+        saveButton.value = "Stop recording";
+        console.log(`saving recording${counter-1}`);
       } else {
-        await stopRecording;
+        await stopRecording();
         recording = false;
+        saveButton.value = "Save recording";
+        console.log(`recording${counter-1} saved`);
       }
     });
   };
