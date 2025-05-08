@@ -28,8 +28,10 @@ window.onload = function() {
     });
   
   let dirHandle = null;
-  let button = document.getElementById("save")
+  let saveButton = document.getElementById("save");
   let albumCreated = false;
+  let recording = false;
+  let counter = 0;
   
   async createAlbum() {
     dirHandle = await window.showDirectoryPicker();
@@ -37,18 +39,34 @@ window.onload = function() {
     const writable = await manifestHandle.createWritable();
     
     const jsonString = JSON.stringify(emulator, null, 2);
+    await writable.write(jsonString);
+    await writable.close();
     
+    let container = document.getElementById("buttons")
+    saveButton.textContent = "Save recording"
   }
   
-  if (albumCreated = false) {
-    createAlbum();
+  async saveRecording() {
+    const newHandle = await dirHandle.getDirectoryHandle('recording')
   }
+  
+  saveButton.addEventListener("click", async() => {
+      if (albumCreated = false) {
+        await createAlbum();
+        albumCreated = true;
+      } else if (recording = false) {
+        recording = 
+      }
+  })
 }
 
 
 </script>
 
-<input id="save" type="button" value="Create album">
+<div id="buttons">
+  <input id="save" type="button" value="Create album">
+  
+</div>
 <hr>
 
 <!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
