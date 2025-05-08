@@ -28,14 +28,27 @@ window.onload = function() {
     });
   
   let dirHandle = null;
+  let button = document.getElementById("save")
+  let albumCreated = false;
   
+  async createAlbum() {
+    dirHandle = await window.showDirectoryPicker();
+    const manifestHandle = await dirHandle.getFileHandle('manifest.json', {create: true});
+    const writable = await manifestHandle.createWritable();
+    
+    const jsonString = JSON.stringify(emulator, null, 2);
+    
+  }
+  
+  if (albumCreated = false) {
+    createAlbum();
+  }
 }
 
 
 </script>
 
-<input id="save_restore" type="button" value="Save state">
-<p id=""
+<input id="save" type="button" value="Create album">
 <hr>
 
 <!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
