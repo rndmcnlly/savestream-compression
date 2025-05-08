@@ -38,33 +38,33 @@
     let guid = null;
     let startedRecording = null;
 
-async function createAlbum() {
-  dirHandle = await window.showDirectoryPicker();
-  
-  try {
-    // Try to get the existing manifest file
-    await dirHandle.getFileHandle("manifest.json");
-    console.log("Using existing manifest");
-  } catch (error) {
-    // If it doesn't exist, create a new one
-    const manifestHandle = await dirHandle.getFileHandle("manifest.json", {
-      create: true,
-    });
-    const writable = await manifestHandle.createWritable();
-    const initialManifest = {
-      "machine_spec": specs,
-      "clips": []
-    };
-    const jsonString = JSON.stringify(initialManifest, null, 2);
-    await writable.write(jsonString);
-    await writable.close();
-    console.log("Created new manifest");
-  }
-  
-  albumCreated = true;
-}
+    async function createAlbum() {
+      dirHandle = await window.showDirectoryPicker();
 
-    async function saveRecording() {
+      try {
+        // Try to get the existing manifest file
+        await dirHandle.getFileHandle("manifest.json");
+        console.log("Using existing manifest");
+      } catch (error) {
+        // If it doesn't exist, create a new one
+        const manifestHandle = await dirHandle.getFileHandle("manifest.json", {
+          create: true,
+        });
+        const writable = await manifestHandle.createWritable();
+        const initialManifest = {
+          "machine_spec": specs,
+          "clips": []
+        };
+        const jsonString = JSON.stringify(initialManifest, null, 2);
+        await writable.write(jsonString);
+        await writable.close();
+        console.log("Created new manifest");
+      }
+
+      albumCreated = true;
+    }
+
+    async function startRecording() {
       guid = crypto.randomUUID();
       const newHandle = await dirHandle.getDirectoryHandle(
         guid,
@@ -105,26 +105,26 @@ async function createAlbum() {
 
     saveButton.addEventListener("click", async () => {
       if (!albumCreated) {
-        console.log("creating album")
+        console.log("creating album");
         await createAlbum();
         albumCreated = true;
-        saveButton.value = "Save recording";
-        console.log("album created")
+        saveButton.value = "Start recording a clip";
+        console.log("album created");
       } else if (!recording) {
-        await saveRecording();
+        await startRecording();
         recording = true;
-        saveButton.value = "Stop recording";
+        saveButton.value = "Stop recording this clip";
       } else {
         await stopRecording();
         recording = false;
-        saveButton.value = "Save recording";
+        saveButton.value = "Start recording another clip";
       }
     });
   };
 </script>
 
 <div id="buttons">
-  <input id="save" type="button" value="Create album" />
+  <input id="save" type="button" value="Create/open album folder" />
 </div>
 <hr />
 
