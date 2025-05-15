@@ -30,21 +30,20 @@
 
     var emulator = (window.emulator = new V86(specs));
 
-    let dirHandle = null;
-    let saveButton = document.getElementById("save");
-    let albumCreated = false;
-    let recording = false;
-    let currentFolder = null;
-    let guid = null;
-    let startedRecording = null;
-    
     let keycodes = {};
     fetch("ps2-scancodes.json")
       .then((res) => res.json())
       .then((json) => (keycodes = json));
-
+    
     let startTime = undefined;
     let stimulus = undefined;
+    let dirHandle = null;
+    let saveButton = document.getElementById("save");
+    let albumCreated = false;
+    let isRecording = false;
+    let currentFolder = null;
+    let guid = null;
+    let startedRecording = null;
 
     function appendStimulusEvent(event) {
       if (isRecording) {
@@ -224,13 +223,13 @@
         albumCreated = true;
         saveButton.value = "Start recording a clip";
         console.log("album created");
-      } else if (!recording) {
+      } else if (!isRecording) {
         await startRecording();
-        recording = true;
+        isRecording = true;
         saveButton.value = "Stop recording this clip";
       } else {
         await stopRecording();
-        recording = false;
+        isRecording = false;
         saveButton.value = "Start recording another clip";
       }
     });
