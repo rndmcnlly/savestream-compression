@@ -134,21 +134,8 @@
       // figure out the ...
 
       const fileContent = fileLines.join("\n");
-
-      // use fileContent to construct a file
-      const encoder = new TextEncoder();
-      const filename = "stimulus.vtt";
-      const file = new File([encoder.encode(fileContent)], filename, {
-        type: "text/vtt",
-      });
-
-      // allow the user to click to download the file
-      const url = URL.createObjectURL(file);
-      const a = document.createElement("a");
-      a.href = url;
-      a.innerHTML = url;
-      a.download = filename;
-      document.getElementById("recording_links").append(a);
+      
+      return fileContent;
     }
 
     async function createAlbum() {
@@ -185,12 +172,17 @@
       );
       currentFolder = newHandle;
       startedRecording = new Date().toISOString();
+      startInputRecording();
     }
 
     async function stopRecording() {
       const stimulusHandle = await currentFolder.getFileHandle("stimulus.vtt", {
         create: true,
       });
+      const stimulusContent = finishInputRecording();
+      const writableStimulus = await stimulusHandle.createWritable();
+      await writable.write(stimulusContent);
+      
       const responseHandle = await currentFolder.getFileHandle("response.mp4", {
         create: true,
       });
