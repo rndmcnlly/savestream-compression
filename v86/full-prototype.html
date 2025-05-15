@@ -37,7 +37,6 @@
     
     let canvas = document.getElementById("emulator-canvas")
     let recordedChunks = [];
-    let recordingStartTime;
     let mediaRecorder;
     let startTime = undefined;
     let stimulus = undefined;
@@ -144,7 +143,6 @@
     
     function startVideoRecording() {
         recordedChunks = [];
-        recordingStartTime = Date.now();
         
         const stream = canvas.captureStream(30); // 30 FPS
         mediaRecorder = new MediaRecorder(stream, {
@@ -156,32 +154,30 @@
           if (event.data.size > 0) recordedChunks.push(event.data);
         };
         
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(recordedChunks, { type: 'video/mp4' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.style.display = 'none';
-          a.href = url;
-          a.download = 'response.mp4';
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-            console.log('Recording completed and downloaded!');
-          }, 100);
-        };
-        
         mediaRecorder.start(100);
         console.log('Recording in progress...');
       }
       
     function stopVideoRecording() {
-        if (mediaRecorder && isRecording) {
-          mediaRecorder.stop();
-          console.log('Processing the video...');
+      return new Promise((resolve, reject) => {
+        if (!mediaRecorder || !isRecording) {
+          reject(new Error('No recording in progress.'));
+          return;
         }
-      }
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          console.log('Recording stopped, blob ready.');
+          resolve(blob);
+        };
+        mediaRecorder.onerror = (e) => {
+          reject(e.error || new Error('MediaRecorder error'));
+        };
+
+        mediaRecorder.stop();
+        console.log('Stopping recording...');
+      });
+    }
 
     async function createAlbum() {
       dirHandle = await window.showDirectoryPicker();
@@ -222,18 +218,22 @@
     }
 
     async function stopRecording() {
+      const stimulusContent = finishInputRecording();
+      const responseContent = await stopVideoRecording();
+      
       const stimulusHandle = await currentFolder.getFileHandle("stimulus.vtt", {
         create: true,
       });
-      const stimulusContent = finishInputRecording();
       const writableStimulus = await stimulusHandle.createWritable();
-      await writable.write(stimulusContent);
-      await writable.close();
+      await writableStimulus.write(stimulusContent);
+      await writableStimulus.close();
       
-      const responseHandle = await currentFolder.getFileHandle("response.mp4", {
+      const responseHandle = await currentFolder.getFileHandle("response.webm", {
         create: true,
       });
-      
+      const writableResponse = await responseHandle.createWritable();
+      await writableResponse.write(await responseContent.arrayBuffer());
+      await writableResponse.close();
       
       const saveStreamHandle = await currentFolder.getFileHandle(
         "savestream.msgpack",
@@ -279,7 +279,7 @@
 
 <div id="buttons">
   <input id="save" type="button" value="Create/open album folder" />
-  <input id="record" type="button" value="Start recording" disabled/>
+  <input id="record" type="button" value="Start recording a clip" disabled/>
 </div>
 <hr />
 
