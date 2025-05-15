@@ -256,6 +256,7 @@
         const writable = await destinationFileHandle.createWritable();
         await writable.write(data);
         await writable.close();
+        await privateDirHandle.removeEntry(filename);
       }
       
       
@@ -277,7 +278,7 @@
     async function stopRecording() {
       const stimulusContent = finishInputRecording();
       const responseContent = await stopVideoRecording();
-      stopStateRecording();
+      await stopStateRecording();
       
       const stimulusHandle = await currentFolder.getFileHandle("stimulus.vtt", {
         create: true,
@@ -293,10 +294,10 @@
       await writableResponse.write(await responseContent.arrayBuffer());
       await writableResponse.close();
       
-      const saveStreamHandle = await currentFolder.getFileHandle(
-        "savestream.msgpack",
-        { create: true }
-      );
+      // const saveStreamHandle = await currentFolder.getFileHandle(
+      //   "savestream.msgpack",
+      //   { create: true }
+      // );
       
       const manifestHandle = await albumDirHandle.getFileHandle("manifest.json");
       const manifestFile = await manifestHandle.getFile();
@@ -336,7 +337,10 @@
         recordButton.value = "Stop recording this clip";
       } else {
         console.log("stopping recording")
+        recordButton.disabled = true;
+        recordButton.value = "Finalizing clip ..."
         await stopRecording();
+        recordButton.disabled = false;
         isRecording = false;
         recordButton.value = "Start recording another clip";
       }
