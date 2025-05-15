@@ -226,11 +226,11 @@
       });
       
       const data = await emulator.save_state();
-      
+    
       
       const fileHandle = await privateDirHandle.getFileHandle(filename, {create: true});
       const writable = await fileHandle.createWritable();
-      await writable.write(await data.arrayBuffer());
+      await writable.write(data);
       await writable.close();
     }
     
@@ -239,17 +239,23 @@
       
       stateSequenceFilenames = [];
       saveState();
-      saveStateInterval = setTimeout(saveState, 1000);
+      saveStateInterval = setInterval(saveState, 1000);
     }
     
-    function stopStateRecording() {
+    async function stopStateRecording() {
       clearInterval(saveStateInterval);
       
       
       // move all of the files from OPFS into the clip folder (no zip)
       for (let filename of stateSequenceFilenames) {
-        // ...
-        console.log("pretending to copy a file to the public clip folder for this album ::", filename);
+        console.log("copying a file to the public clip folder for this album ::", filename);
+        const sourceFileHandle = await privateDirHandle.getFileHandle(filename);
+        const sourceFile = await sourceFileHandle.getFile();
+        const data = await sourceFile.arrayBuffer();
+        const destinationFileHandle = await currentFolder.getFileHandle(filename, {create: true});
+        const writable = await destinationFileHandle.createWritable();
+        await writable.write(data);
+        await writable.close();
       }
       
       
