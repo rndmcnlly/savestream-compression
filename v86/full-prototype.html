@@ -36,12 +36,13 @@
       .then((json) => (keycodes = json));
     
     let canvas = document.getElementById("emulator-canvas")
+    let saveButton = document.getElementById("save");
+    let recordButton = document.getElementById("record")
     let recordedChunks = [];
     let mediaRecorder;
     let startTime = undefined;
     let stimulus = undefined;
     let dirHandle = null;
-    let saveButton = document.getElementById("save");
     let albumCreated = false;
     let isRecording = false;
     let currentFolder = null;
@@ -263,15 +264,24 @@
         await createAlbum();
         albumCreated = true;
         saveButton.disabled = true;
+        recordButton.disabled = false;
         console.log("album created");
-      } else if (!isRecording) {
+      }
+    });
+    
+    recordButton.addEventListener("click", async () => {
+      if(!albumCreated) return;
+      
+      if (!isRecording) {
+        console.log("started recording")
         await startRecording();
         isRecording = true;
-        saveButton.value = "Stop recording this clip";
+        recordButton.value = "Stop recording this clip";
       } else {
+        console.log("stopping recording")
         await stopRecording();
         isRecording = false;
-        saveButton.value = "Start recording another clip";
+        recordButton.value = "Start recording another clip";
       }
     });
   };
