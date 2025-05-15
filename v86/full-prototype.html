@@ -42,7 +42,8 @@
     let mediaRecorder;
     let startTime = undefined;
     let stimulus = undefined;
-    let dirHandle = null;
+    let albumDirHandle = null;
+    let privateDirHandle = null;
     let albumCreated = false;
     let isRecording = false;
     let currentFolder = null;
@@ -84,6 +85,8 @@
           coordinates: [data[0], data[1]],
         });
       });
+      
+      
     });
 
     function startInputRecording() {
@@ -181,15 +184,15 @@
     }
 
     async function createAlbum() {
-      dirHandle = await window.showDirectoryPicker();
+      albumDirHandle = await window.showDirectoryPicker();
 
       try {
         // Try to get the existing manifest file
-        await dirHandle.getFileHandle("manifest.json");
+        await albumDirHandle.getFileHandle("manifest.json");
         console.log("Using existing manifest");
       } catch (error) {
         // If it doesn't exist, create a new one
-        const manifestHandle = await dirHandle.getFileHandle("manifest.json", {
+        const manifestHandle = await albumDirHandle.getFileHandle("manifest.json", {
           create: true,
         });
         const writable = await manifestHandle.createWritable();
@@ -205,10 +208,39 @@
 
       albumCreated = true;
     }
+    
+    
+    
+    function saveState() {
+      
+      const filename = "...";
+      // todo: get the emulator to save the state to a file via privateDirHandle
+      // add a stiululs evnt to makr the time of this save state
+      
+      appendStimulusEvent({
+        name: "save-state",
+        filename: 
+      })
+    }
+    
+    function startStateRecording() {
+      // set privateDirHandle with OPFS
+      
+      
+      
+      // time loop every 1000ms 
+      // save_state() 
+      
+    }
+    
+    function stopStateRecording() {
+      // stop recording save_state()
+      // move all of the files from OPFS into the clip folder (no zip)
+    }
 
     async function startRecording() {
       guid = crypto.randomUUID();
-      const newHandle = await dirHandle.getDirectoryHandle(
+      const newHandle = await albumDirHandle.getDirectoryHandle(
         guid,
         { create: true }
       );
@@ -241,7 +273,7 @@
         { create: true }
       );
       
-      const manifestHandle = await dirHandle.getFileHandle("manifest.json");
+      const manifestHandle = await albumDirHandle.getFileHandle("manifest.json");
       const manifestFile = await manifestHandle.getFile();
       const manifestContent = await manifestFile.text();
       const manifest = JSON.parse(manifestContent);
