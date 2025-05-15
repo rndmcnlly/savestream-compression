@@ -87,13 +87,8 @@ window.onload = function()
       {"event": {"name": "keyboard-code", "code": 66}, "timestamp": 2943843785 }
       */
       
-      
-      // figure out the ...
-      
-      
       const fileContent = fileLines.join("\n");
       
-
       // use fileContent to construct a file
       const encoder = new TextEncoder();
       const filename = "stimulus.vtt";
@@ -107,7 +102,6 @@ window.onload = function()
       a.download = filename;
       document.getElementById("recording_links").append(a);
     }
-  
   
   
     let isRecording = false;
