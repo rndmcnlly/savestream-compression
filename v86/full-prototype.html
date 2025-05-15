@@ -210,32 +210,49 @@
     }
     
     
+    let stateSequenceFilenames = [];
+    let saveStateInterval = null;
     
-    function saveState() {
+    async function saveState() {
       
-      const filename = "...";
-      // todo: get the emulator to save the state to a file via privateDirHandle
-      // add a stiululs evnt to makr the time of this save state
+      const i = stateSequenceFilenames.length;
+      const filename = `v86state (${i}).bin`;
+      stateSequenceFilenames.push(filename);
       
+    
       appendStimulusEvent({
         name: "save-state",
-        filename: 
-      })
+        filename: filename
+      });
+      
+      const data = await emulator.save_state();
+      
+      
+      const fileHandle = await privateDirHandle.getFileHandle(filename, {create: true});
+      const writable = await fileHandle.createWritable();
+      await writable.write(await data.arrayBuffer());
+      await writable.close();
     }
     
-    function startStateRecording() {
-      // set privateDirHandle with OPFS
+    async function startStateRecording() {
+      privateDirHandle = await navigator.storage.getDirectory();
       
-      
-      
-      // time loop every 1000ms 
-      // save_state() 
-      
+      stateSequenceFilenames = [];
+      saveState();
+      saveStateInterval = setTimeout(saveState, 1000);
     }
     
     function stopStateRecording() {
-      // stop recording save_state()
+      clearInterval(saveStateInterval);
+      
+      
       // move all of the files from OPFS into the clip folder (no zip)
+      for (let filename of stateSequenceFilenames) {
+        // ...
+        console.log("pretending to copy a file to the public clip folder for this album ::", filename);
+      }
+      
+      
     }
 
     async function startRecording() {
@@ -248,11 +265,13 @@
       startedRecording = new Date().toISOString();
       startInputRecording();
       startVideoRecording();
+      startStateRecording();
     }
 
     async function stopRecording() {
       const stimulusContent = finishInputRecording();
       const responseContent = await stopVideoRecording();
+      stopStateRecording();
       
       const stimulusHandle = await currentFolder.getFileHandle("stimulus.vtt", {
         create: true,
