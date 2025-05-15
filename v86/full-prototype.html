@@ -35,6 +35,10 @@
       .then((res) => res.json())
       .then((json) => (keycodes = json));
     
+    let canvas = document.getElementById("emulator-canvas")
+    let recordedChunks = [];
+    let recordingStartTime;
+    let mediaRecorder;
     let startTime = undefined;
     let stimulus = undefined;
     let dirHandle = null;
@@ -137,6 +141,47 @@
       
       return fileContent;
     }
+    
+    function startVideoRecording() {
+        recordedChunks = [];
+        recordingStartTime = Date.now();
+        
+        const stream = canvas.captureStream(30); // 30 FPS
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'video/webm;codecs=vp9',
+          videoBitsPerSecond: 2500000
+        });
+        
+        mediaRecorder.ondataavailable = event => {
+          if (event.data.size > 0) recordedChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = 'response.mp4';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            console.log('Recording completed and downloaded!');
+          }, 100);
+        };
+        
+        mediaRecorder.start(100);
+        console.log('Recording in progress...');
+      }
+      
+    function stopVideoRecording() {
+        if (mediaRecorder && isRecording) {
+          mediaRecorder.stop();
+          console.log('Processing the video...');
+        }
+      }
 
     async function createAlbum() {
       dirHandle = await window.showDirectoryPicker();
@@ -173,6 +218,7 @@
       currentFolder = newHandle;
       startedRecording = new Date().toISOString();
       startInputRecording();
+      startVideoRecording();
     }
 
     async function stopRecording() {
@@ -182,10 +228,13 @@
       const stimulusContent = finishInputRecording();
       const writableStimulus = await stimulusHandle.createWritable();
       await writable.write(stimulusContent);
+      await writable.close();
       
       const responseHandle = await currentFolder.getFileHandle("response.mp4", {
         create: true,
       });
+      
+      
       const saveStreamHandle = await currentFolder.getFileHandle(
         "savestream.msgpack",
         { create: true }
@@ -237,5 +286,5 @@
 <!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
 <div id="screen_container">
   <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
-  <canvas style="display: none"></canvas>
+  <canvas id="emulator-canvas" style="display: none"></canvas>
 </div>
