@@ -221,7 +221,7 @@
         console.log("creating album");
         await createAlbum();
         albumCreated = true;
-        saveButton.value = "Start recording a clip";
+        saveButton.disabled = true;
         console.log("album created");
       } else if (!isRecording) {
         await startRecording();
@@ -238,7 +238,7 @@
 
 <div id="buttons">
   <input id="save" type="button" value="Create/open album folder" />
-  <input id="record" type="button" value="Start recording"/>
+  <input id="record" type="button" value="Start recording" disabled/>
 </div>
 <hr />
 
