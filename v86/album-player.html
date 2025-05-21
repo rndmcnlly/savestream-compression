@@ -11,6 +11,11 @@ window.onload = function()
   let dirHandle;
   let loadButton = document.getElementById("loadAlbumButton")
   
+  let manifestLoadedResolve;
+  const manifestLoaded = new Promise((resolve) => {
+    manifestLoadedResolve = resolve;
+  });
+  
   loadButton.addEventListener('click', async () => {
     dirHandle = await window.showDirectoryPicker();
     
@@ -22,16 +27,23 @@ window.onload = function()
         manifest = JSON.parse(manifestText);
         
         console.log(manifest)
-        console.log(manifest.clips)
+        manifestLoadedResolve(manifest);
+        break;
       }
     }
   })
 
+  manifestLoaded.then((manifest) => {
+    
+  })
 }
 </script>
 
 <div id="options">
   <input id="loadAlbumButton" type="button" value="Load Album Folder">
+  <select id="manifestDropdown">
+    <option disabled selected>Choose clip to play</option>
+  </select>
 </div>
 
 <hr>
