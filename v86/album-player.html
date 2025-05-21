@@ -12,10 +12,14 @@ window.onload = function()
     const dirHandle = await window.showDirectoryPicker();
     for await (const [name, handle] of dirHandle.entries()) {
       if(handle.kind === 'directory') {
+        
         // stuff
         
       } else if(handle.kind === "file") {
         // stuff
+        if (handle.name == "manifest.json") {
+          
+        }
       }
     }
   })
