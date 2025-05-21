@@ -7,11 +7,15 @@
 
 window.onload = function()
 {
-  
+  let loadButton = document.getElementById("loadAlbumButton")
+  loadButton.addEventListener('click', async () => {
+    const dirHandle = awaint window.showDirectoryPicker();
+    
+  })
 }
 </script>
 
-<input id="loadFolderButton" type="button" value="Load Album Folder">
+<input id="loadAlbumButton" type="button" value="Load Album Folder">
 <hr>
 
 <video id="responseVideo" type="video/webm">
