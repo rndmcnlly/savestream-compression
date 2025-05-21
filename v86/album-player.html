@@ -14,18 +14,19 @@ window.onload = function()
   loadButton.addEventListener('click', async () => {
     dirHandle = await window.showDirectoryPicker();
     
-    for await (const handle of dirHandle.entries()) {
-      if (handle.name == "manifest.json") {
+    for await (const [name, handle] of dirHandle.entries()) {
+      console.log(name)
+      if (name == "manifest.json") {
         let manifestFile = await handle.getFile();
         let manifestText = await manifestFile.text();
         manifest = JSON.parse(manifestText);
+        
+        console.log(manifest)
+        console.log(manifest.clips)
       }
     }
   })
-  
-  let 
-  
-  for await (const)
+
 }
 </script>
 
