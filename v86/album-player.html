@@ -8,20 +8,24 @@
 window.onload = function()
 {
   let manifest = {};
+  let dirHandle;
   let loadButton = document.getElementById("loadAlbumButton")
   
   loadButton.addEventListener('click', async () => {
-    const dirHandle = await window.showDirectoryPicker();
+    dirHandle = await window.showDirectoryPicker();
+    
     for await (const handle of dirHandle.entries()) {
       if (handle.name == "manifest.json") {
         let manifestFile = await handle.getFile();
         let manifestText = await manifestFile.text();
-        manifest = JSON.parse(text);
+        manifest = JSON.parse(manifestText);
       }
     }
   })
   
+  let 
   
+  for await (const)
 }
 </script>
 
