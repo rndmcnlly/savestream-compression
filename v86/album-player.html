@@ -11,12 +11,13 @@ window.onload = function()
 }
 </script>
 
-<input id="save_restore" type="button" value="Save state">
-<input id="save_file" type="button" value="Save state to file">
-Restore from file: <input id="restore_file" type="file">
+<input id="loadFolderButton" type="button" value="Load Album Folder">
 <hr>
 
-<video id="responseVideo" type="video/webm"></video>
+<video id="responseVideo" type="video/webm">
+  <track id="stimulusTrack" kind="subtitles">
+</video>
+
 <!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
 <div id="screen_container">
     <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
