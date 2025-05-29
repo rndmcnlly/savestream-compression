@@ -9,6 +9,8 @@ window.onload = function()
 {
   let manifest = {};
   let dirHandle;
+  let subDirHandle;
+  let latestSaveCue = null;
   let loadButton = document.getElementById("loadAlbumButton")
   let dropdown = document.getElementById("manifestDropdown")
   let videoPlayer = document.getElementById("responseVideo")
@@ -43,10 +45,10 @@ window.onload = function()
     const selectedFolderName = this.value;
 
       try {
-        const subDir = await dirHandle.getDirectoryHandle(selectedFolderName);
+        subDirHandle = await dirHandle.getDirectoryHandle(selectedFolderName);
 
         // Load video
-        const videoHandle = await subDir.getFileHandle("response.webm");
+        const videoHandle = await subDirHandle.getFileHandle("response.webm");
         const videoFile = await videoHandle.getFile();
         const videoURL = URL.createObjectURL(videoFile);
         videoPlayer.src = videoURL;
@@ -78,23 +80,22 @@ window.onload = function()
     const currentTime = videoPlayer.currentTime;
     const track = videoPlayer.textTracks[0];
     const cues = track.cues;
-    let latestCue = null;
+    latestSaveCue = null;
     
     if (!cues || cues.length === 0) return;
 
-    // 🔁 Loop backward from the last cue
+    // Loop backward from the last cue
     for (let i = cues.length - 1; i >= 0; i--) {
       const cue = cues[i];
-      console.log(`Checking cue ${i}: startTime=${cue.startTime}, currentTime=${currentTime}`);
       if (cue.startTime <= currentTime) {
         try {
           const data = JSON.parse(cue.text);
-          console.log("Parsed cue data:", data);
+          console.log(data.event?.name)
 
-          if (data.event?.name === "save-state") {
-            latestCue = data;
-            console.log(latestCue)
-            break; // ✅ Found the most recent match
+          if (data.event?.name == "save-state") {
+            latestSaveCue = data;
+            console.log(latestSaveCue)
+            break; // Found the most recent match
           }
         } catch (e) {
           console.warn("Invalid JSON in cue:", cue.text);
@@ -102,10 +103,12 @@ window.onload = function()
       }
     }
 
-    displayElement.textContent = latestCue
-      ? `Latest save: ${latestCue.event.filename}`
+    displayElement.textContent = latestSaveCue
+      ? `Latest save: ${latestSaveCue.event.filename}`
       : "No save-state yet.";
   }
+  
+  
   
   videoPlayer.addEventListener("timeupdate", updateSaveStateDisplay);
   videoPlayer.addEventListener("seeked", updateSaveStateDisplay);
