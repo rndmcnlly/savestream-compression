@@ -79,18 +79,21 @@ window.onload = function()
     const track = videoPlayer.textTracks[0];
     const cues = track.cues;
     let latestCue = null;
-
+    
     if (!cues || cues.length === 0) return;
 
     // 🔁 Loop backward from the last cue
     for (let i = cues.length - 1; i >= 0; i--) {
-      console.log("hello")
       const cue = cues[i];
+      console.log(`Checking cue ${i}: startTime=${cue.startTime}, currentTime=${currentTime}`);
       if (cue.startTime <= currentTime) {
         try {
           const data = JSON.parse(cue.text);
+          console.log("Parsed cue data:", data);
+
           if (data.event?.name === "save-state") {
             latestCue = data;
+            console.log(latestCue)
             break; // ✅ Found the most recent match
           }
         } catch (e) {
