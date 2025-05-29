@@ -16,14 +16,16 @@ window.onload = function()
   let videoPlayer = document.getElementById("responseVideo")
   let track = document.getElementById("stimulusTrack")
   let displayElement = document.getElementById("saveStateDisplay");
+  let emulator = null;
 
   
   async function createEmulator() {
     /* 
     ...
     */
-    var emulator = window.emulator = new V86(manifest.machine_spec);
-    
+    const machine_spec = structuredClone(manifest.machine_spec);
+    machine_spec.screen_container = document.getElementById("screen_container");
+    emulator = window.emulator = new V86(machine_spec);
   }
     
   loadButton.addEventListener('click', async () => {
@@ -94,6 +96,7 @@ window.onload = function()
     if (!cues || cues.length === 0) return;
 
     // Loop backward from the last cue
+    // In the future: consider using a binary search for faster lookup in very long sequences
     for (let i = cues.length - 1; i >= 0; i--) {
       const cue = cues[i];
       if (cue.startTime <= currentTime) {
@@ -115,6 +118,10 @@ window.onload = function()
     displayElement.textContent = latestSaveCue
       ? `Latest save: ${latestSaveCue.event.filename}`
       : "No save-state yet.";
+    
+    if (latestSaveCue) {
+      loadSave(latestSaveCue.event.filename);
+    }
   }
   
   async function loadSave(filename) {
@@ -128,34 +135,6 @@ window.onload = function()
     }
     
   }
-  
-  downloadButton.addEventListener("click", async () => {
-    if (!latestSaveCue) {
-      alert("No save-state cue available.");
-      return;
-    }
-
-    const filename = latestSaveCue.event.filename;
-
-    try {
-      const fileHandle = await subDirHandle.getFileHandle(filename); // must be scoped properly
-      const file = await fileHandle.getFile();
-      const blobUrl = URL.createObjectURL(file);
-
-      // Trigger browser download
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = filename;
-      a.click();
-
-      // Cleanup
-      URL.revokeObjectURL(blobUrl);
-      console.log(`Downloaded: ${filename}`);
-    } catch (err) {
-      console.error("Could not download save-state file:", err);
-      alert(`File "${filename}" not found in the folder.`);
-    }
-  });  
     
   videoPlayer.addEventListener("timeupdate", updateSaveStateDisplay);
   videoPlayer.addEventListener("seeked", updateSaveStateDisplay);
