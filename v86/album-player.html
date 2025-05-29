@@ -16,8 +16,15 @@ window.onload = function()
   let videoPlayer = document.getElementById("responseVideo")
   let track = document.getElementById("stimulusTrack")
   let displayElement = document.getElementById("saveStateDisplay");
-  let downloadButton = document.getElementById("downloadSaveButton");
 
+  
+  async function createEmulator() {
+    /* 
+    ...
+    */
+    var emulator = window.emulator = new V86(manifest.machine_spec);
+    
+  }
     
   loadButton.addEventListener('click', async () => {
     dirHandle = await window.showDirectoryPicker();
@@ -28,7 +35,9 @@ window.onload = function()
       let manifestFile = await handle.getFile();
       let manifestText = await manifestFile.text();
       manifest = JSON.parse(manifestText);
-      console.log(manifest)
+      console.log(manifest);
+      
+      await createEmulator();
     } catch (err) {
       console.error(`Error accessing manifest.json`, err)
     }
@@ -108,6 +117,18 @@ window.onload = function()
       : "No save-state yet.";
   }
   
+  async function loadSave(filename) {
+    try {
+      const fileHandle = await subDirHandle.getFileHandle(filename); // must be scoped properly
+      const file = await fileHandle.getFile();
+      const buffer = await file.arrayBuffer();
+      await emulator.restore_state(buffer);
+    } catch (err) {
+      alert(`File "${filename}" not found in the folder.`);
+    }
+    
+  }
+  
   downloadButton.addEventListener("click", async () => {
     if (!latestSaveCue) {
       alert("No save-state cue available.");
@@ -134,8 +155,8 @@ window.onload = function()
       console.error("Could not download save-state file:", err);
       alert(`File "${filename}" not found in the folder.`);
     }
-  });
-  
+  });  
+    
   videoPlayer.addEventListener("timeupdate", updateSaveStateDisplay);
   videoPlayer.addEventListener("seeked", updateSaveStateDisplay);
   
@@ -156,7 +177,6 @@ window.onload = function()
 </video>
 <div>
   <p id = "saveStateDisplay"></p>
-  <input id="downloadSaveButton" type="button" value="Load Album Folder">
 </div>
 
 <!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
