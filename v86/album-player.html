@@ -59,6 +59,7 @@ window.onload = function()
           const stimURL = URL.createObjectURL(stimFile);
           track.src = stimURL;
           track.default = true;
+          
 
         } catch {
           console.warn("stimulus.vtt not found");
@@ -73,34 +74,38 @@ window.onload = function()
       } 
   })
   
-  videoPlayer.addEventListener("loadedmetadata", () => {
+  function updateSaveStateDisplay() {
+    const currentTime = videoPlayer.currentTime;
     const track = videoPlayer.textTracks[0];
-    videoPlayer.textTracks[0].mode = "showing";
+    const cues = track.cues;
+    let latestCue = null;
 
-    track.oncuechange = () => {
-      const cues = track.activeCues;
-      if (!cues || cues.length === 0) return;
+    if (!cues || cues.length === 0) return;
 
-      // Find the most recent matching cue
-      let latestMatch = null;
-
-      for (const cue of cues) {
+    // 🔁 Loop backward from the last cue
+    for (let i = cues.length - 1; i >= 0; i--) {
+      console.log("hello")
+      const cue = cues[i];
+      if (cue.startTime <= currentTime) {
         try {
           const data = JSON.parse(cue.text);
           if (data.event?.name === "save-state") {
-            latestMatch = data;
+            latestCue = data;
+            break; // ✅ Found the most recent match
           }
-        } catch (err) {
-          console.warn("Failed to parse cue text:", cue.text);
+        } catch (e) {
+          console.warn("Invalid JSON in cue:", cue.text);
         }
       }
+    }
 
-      if (latestMatch) {
-        // ✅ Display the most recent "save-state" cue
-        displayElement.textContent = `Latest save: ${latestMatch.event.filename}`;
-      }
-    };
-  });
+    displayElement.textContent = latestCue
+      ? `Latest save: ${latestCue.event.filename}`
+      : "No save-state yet.";
+  }
+  
+  videoPlayer.addEventListener("timeupdate", updateSaveStateDisplay);
+  videoPlayer.addEventListener("seeked", updateSaveStateDisplay);
   
 }
 </script>
