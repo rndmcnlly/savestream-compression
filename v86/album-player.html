@@ -11,6 +11,8 @@ window.onload = function()
   let dirHandle;
   let loadButton = document.getElementById("loadAlbumButton")
   let dropdown = document.getElementById("manifestDropdown")
+  let videoPlayer = document.getElementById("responseVideo")
+  let track = document.getElementById("stimulusTrack")
   
   let manifestLoadedResolve;
   
@@ -36,23 +38,37 @@ window.onload = function()
     }
   })
   
-  dropdown.addEventListener("change", async function () => {
+  dropdown.addEventListener("change", async function () {
     const selectedFolderName = this.value;
 
-    try {
-      const subDirHandle = await dirHandle.getDirectoryHandle(selectedFolderName);
-      const videoFileHandle = await subDirHandle.getFileHandle("response.webm");
-      const videoFile = await videoFileHandle.getFile();
-      const videoURL = URL.createObjectURL(videoFile);
+      try {
+        const subDir = await dirHandle.getDirectoryHandle(selectedFolderName);
 
-      const videoPlayer = document.getElementById("responseVideo");
-      videoPlayer.src = videoURL;
-      videoPlayer.load();
-      // videoPlayer.play(); // optional
-      console.log("Loaded and playing:", videoName);
-    } catch (err) {
-      console.error(`Error accessing response.webm in ${selectedFolderName}:`, err);
-    } 
+        // Load video
+        const videoHandle = await subDir.getFileHandle("response.webm");
+        const videoFile = await videoHandle.getFile();
+        const videoURL = URL.createObjectURL(videoFile);
+        videoPlayer.src = videoURL;
+        videoPlayer.load();
+
+        // Load stimulus
+        try {
+          const stimHandle = await subDir.getFileHandle("stimulus.vtt");
+          const stimFile = await stimHandle.getFile();
+          const stimURL = URL.createObjectURL(stimFile);
+          track.src = stimURL;
+          track.default = true;
+          track.mode = "showing";
+        } catch {
+          console.warn("stimulus.vtt not found");
+          track.removeAttribute("src"); // Clear old subtitle
+        }
+
+        console.log("Video and subtitles loaded.");
+        console.log(videoPlayer.textTracks[0]);
+      } catch (err) {
+        console.error("Failed to load media from subfolder:", err);
+      } 
   })
 }
 </script>
@@ -66,7 +82,7 @@ window.onload = function()
 
 <hr>
 
-<video id="responseVideo" type="video/webm">
+<video id="responseVideo" type="video/webm" controls>
   <track id="stimulusTrack" kind="subtitles">
 </video>
 
