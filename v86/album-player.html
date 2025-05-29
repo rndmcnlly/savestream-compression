@@ -17,30 +17,43 @@ window.onload = function()
   loadButton.addEventListener('click', async () => {
     dirHandle = await window.showDirectoryPicker();
     
-    // search through all entries to get manifest
-    for await (const [name, handle] of dirHandle.entries()) {
-      console.log(name)
-      if (name == "manifest.json") {
-        let manifestFile = await handle.getFile();
-        let manifestText = await manifestFile.text();
-        manifest = JSON.parse(manifestText);
-        
-        console.log(manifest)
-        break;
-      }
+    // get manifest and save it as JSON object
+    try {
+      let handle = await dirHandle.getFileHandle("manifest.json");
+      let manifestFile = await handle.getFile();
+      let manifestText = await manifestFile.text();
+      manifest = JSON.parse(manifestText);
+      console.log(manifest)
+    } catch (err) {
+      console.error(`Error accessing manifest.json`, err)
     }
     
     // add clips to dropdown
     for (let clip of manifest.clips) {
       const option = document.createElement("option");
-      // option.value = index;
       option.textContent = clip["id"];
       dropdown.appendChild(option);
     }
   })
   
-  
-  
+  dropdown.addEventListener("change", async function () => {
+    const selectedFolderName = this.value;
+
+    try {
+      const subDirHandle = await dirHandle.getDirectoryHandle(selectedFolderName);
+      const videoFileHandle = await subDirHandle.getFileHandle("response.webm");
+      const videoFile = await videoFileHandle.getFile();
+      const videoURL = URL.createObjectURL(videoFile);
+
+      const videoPlayer = document.getElementById("responseVideo");
+      videoPlayer.src = videoURL;
+      videoPlayer.load();
+      // videoPlayer.play(); // optional
+      console.log("Loaded and playing:", videoName);
+    } catch (err) {
+      console.error(`Error accessing response.webm in ${selectedFolderName}:`, err);
+    } 
+  })
 }
 </script>
 
