@@ -16,9 +16,9 @@ window.onload = function()
   let videoPlayer = document.getElementById("responseVideo")
   let track = document.getElementById("stimulusTrack")
   let displayElement = document.getElementById("saveStateDisplay");
-  
-  let manifestLoadedResolve;
-  
+  let downloadButton = document.getElementById("downloadSaveButton");
+
+    
   loadButton.addEventListener('click', async () => {
     dirHandle = await window.showDirectoryPicker();
     
@@ -56,7 +56,7 @@ window.onload = function()
 
         // Load stimulus
         try {
-          const stimHandle = await subDir.getFileHandle("stimulus.vtt");
+          const stimHandle = await subDirHandle.getFileHandle("stimulus.vtt");
           const stimFile = await stimHandle.getFile();
           const stimURL = URL.createObjectURL(stimFile);
           track.src = stimURL;
@@ -108,7 +108,33 @@ window.onload = function()
       : "No save-state yet.";
   }
   
-  
+  downloadButton.addEventListener("click", async () => {
+    if (!latestSaveCue) {
+      alert("No save-state cue available.");
+      return;
+    }
+
+    const filename = latestSaveCue.event.filename;
+
+    try {
+      const fileHandle = await subDirHandle.getFileHandle(filename); // must be scoped properly
+      const file = await fileHandle.getFile();
+      const blobUrl = URL.createObjectURL(file);
+
+      // Trigger browser download
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      a.click();
+
+      // Cleanup
+      URL.revokeObjectURL(blobUrl);
+      console.log(`Downloaded: ${filename}`);
+    } catch (err) {
+      console.error("Could not download save-state file:", err);
+      alert(`File "${filename}" not found in the folder.`);
+    }
+  });
   
   videoPlayer.addEventListener("timeupdate", updateSaveStateDisplay);
   videoPlayer.addEventListener("seeked", updateSaveStateDisplay);
@@ -128,8 +154,9 @@ window.onload = function()
 <video id="responseVideo" type="video/webm" controls>
   <track id="stimulusTrack" kind="subtitles">
 </video>
-<div id="saveStateDisplay">
-  
+<div>
+  <p id = "saveStateDisplay"></p>
+  <input id="downloadSaveButton" type="button" value="Load Album Folder">
 </div>
 
 <!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
