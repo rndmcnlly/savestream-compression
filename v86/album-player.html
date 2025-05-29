@@ -10,15 +10,14 @@ window.onload = function()
   let manifest = {};
   let dirHandle;
   let loadButton = document.getElementById("loadAlbumButton")
+  let dropdown = document.getElementById("manifestDropdown")
   
   let manifestLoadedResolve;
-  const manifestLoaded = new Promise((resolve) => {
-    manifestLoadedResolve = resolve;
-  });
   
   loadButton.addEventListener('click', async () => {
     dirHandle = await window.showDirectoryPicker();
     
+    // search through all entries to get manifest
     for await (const [name, handle] of dirHandle.entries()) {
       console.log(name)
       if (name == "manifest.json") {
@@ -27,17 +26,21 @@ window.onload = function()
         manifest = JSON.parse(manifestText);
         
         console.log(manifest)
-        manifestLoadedResolve(manifest);
         break;
       }
     }
-  })
-
-  manifestLoaded.then((manifest) => {
+    
+    // add clips to dropdown
     for (let clip of manifest.clips) {
-      
+      const option = document.createElement("option");
+      // option.value = index;
+      option.textContent = clip["id"];
+      dropdown.appendChild(option);
     }
   })
+  
+  
+  
 }
 </script>
 
