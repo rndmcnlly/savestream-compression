@@ -13,6 +13,7 @@ window.onload = function()
   let dropdown = document.getElementById("manifestDropdown")
   let videoPlayer = document.getElementById("responseVideo")
   let track = document.getElementById("stimulusTrack")
+  let displayElement = document.getElementById("saveStateDisplay");
   
   let manifestLoadedResolve;
   
@@ -58,18 +59,49 @@ window.onload = function()
           const stimURL = URL.createObjectURL(stimFile);
           track.src = stimURL;
           track.default = true;
-          track.mode = "showing";
+
         } catch {
           console.warn("stimulus.vtt not found");
           track.removeAttribute("src"); // Clear old subtitle
         }
-
+        
+        videoPlayer.textTracks[0].mode = "showing";
         console.log("Video and subtitles loaded.");
         console.log(videoPlayer.textTracks[0]);
       } catch (err) {
         console.error("Failed to load media from subfolder:", err);
       } 
   })
+  
+  videoPlayer.addEventListener("loadedmetadata", () => {
+    const track = videoPlayer.textTracks[0];
+    videoPlayer.textTracks[0].mode = "showing";
+
+    track.oncuechange = () => {
+      const cues = track.activeCues;
+      if (!cues || cues.length === 0) return;
+
+      // Find the most recent matching cue
+      let latestMatch = null;
+
+      for (const cue of cues) {
+        try {
+          const data = JSON.parse(cue.text);
+          if (data.event?.name === "save-state") {
+            latestMatch = data;
+          }
+        } catch (err) {
+          console.warn("Failed to parse cue text:", cue.text);
+        }
+      }
+
+      if (latestMatch) {
+        // ✅ Display the most recent "save-state" cue
+        displayElement.textContent = `Latest save: ${latestMatch.event.filename}`;
+      }
+    };
+  });
+  
 }
 </script>
 
@@ -85,6 +117,9 @@ window.onload = function()
 <video id="responseVideo" type="video/webm" controls>
   <track id="stimulusTrack" kind="subtitles">
 </video>
+<div id="saveStateDisplay">
+  
+</div>
 
 <!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
 <div id="screen_container">
