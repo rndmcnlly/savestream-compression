@@ -38,8 +38,11 @@ window.onload = function()
       let manifestText = await manifestFile.text();
       manifest = JSON.parse(manifestText);
       console.log(manifest);
-      
       await createEmulator();
+      
+      if(manifest.clips && manifest.clips.length > 0) {
+        await loadClip(manifest.clips[0].id);
+      }
     } catch (err) {
       console.error(`Error accessing manifest.json`, err)
     }
@@ -52,8 +55,13 @@ window.onload = function()
     }
   })
   
+  
+  
   dropdown.addEventListener("change", async function () {
-    const selectedFolderName = this.value;
+    await loadClip(this.value);
+  });
+  
+  async function loadClip(selectedFolderName) {
 
       try {
         subDirHandle = await dirHandle.getDirectoryHandle(selectedFolderName);
@@ -85,7 +93,7 @@ window.onload = function()
       } catch (err) {
         console.error("Failed to load media from subfolder:", err);
       } 
-  })
+  }
   
   function updateSaveStateDisplay() {
     const currentTime = videoPlayer.currentTime;
