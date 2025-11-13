@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>💾 v86 Savestream Demo</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #111;
+      color: #0f0;
+      padding: 20px;
+    }
+    h2 { color: #9f9; }
+    .section { margin-bottom: 20px; }
+    #output {
+      background: #000;
+      color: #0f0;
+      border: 1px solid #444;
+      padding: 10px;
+      white-space: pre-wrap;
+      height: 300px;
+      overflow-y: auto;
+    }
+    .download-link {
+      display: inline-block;
+      margin-top: 10px;
+      color: #9f9;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .time {
+      color: #9f9;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>💾 v86 Savestream Demo</h2>
+
+  <div class="section">
+    <p>Select a folder containing v86 savestates:</p>
+    <input type="file" id="folderPicker" webkitdirectory multiple />
+  </div>
+
+  <div class="section">
+    <div class="time" id="encodeTime"></div>
+    <a id="downloadEncoded" class="download-link" style="display:none;">⬇️ Download Encoded Savestream</a>
+  </div>
+
+  <div class="section">
+    <div class="time" id="decodeTime"></div>
+    <a id="downloadDecoded" class="download-link" style="display:none;">⬇️ Download First Decoded State</a>
+  </div>
+
+  <pre id="output"></pre>
+
+  <!-- Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/@msgpack/msgpack@3.1.1/dist.umd/msgpack.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fast-json-patch@3.1.1/dist/fast-json-patch.min.js"></script>
+  <script src="./savestreams_updated.js"></script>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const out = document.getElementById("output");
+      const log = msg => {
+        out.textContent += msg + "\n";
+        out.scrollTop = out.scrollHeight;
+      };
+
+      const encodeTime = document.getElementById("encodeTime");
+      const decodeTime = document.getElementById("decodeTime");
+      const dlEncode = document.getElementById("downloadEncoded");
+      const dlDecode = document.getElementById("downloadDecoded");
+
+      const { encode, decode, decodeOne, trim } = window.v86Savestream || {};
+
+      if (!encode || !decode) {
+        log("❌ v86Savestream not loaded. Check savestreams_updated.js");
+        return;
+      }
+
+      document.getElementById("folderPicker").addEventListener("change", async e => {
+        out.textContent = "";
+        dlEncode.style.display = "none";
+        dlDecode.style.display = "none";
+
+        // Sort files numerically by name (e.g., save(1).bin, save(2).bin)
+        const files = Array.from(e.target.files)
+          .filter(f => f.name.toLowerCase().endsWith(".bin"))
+          .sort((a, b) => {
+            const numA = parseInt(a.name.match(/\((\d+)\)/)?.[1] || 0, 10);
+            const numB = parseInt(b.name.match(/\((\d+)\)/)?.[1] || 0, 10);
+            return numA - numB;
+          });
+
+        if (!files.length) {
+          log("⚠️ No .bin files found.");
+          return;
+        }
+
+        log(`📁 Loaded ${files.length} savestate(s)`);
+        const savestates = [];
+
+        for (const file of files) {
+          log(`→ Reading ${file.name}...`);
+          const buf = new Uint8Array(await file.arrayBuffer());
+          savestates.push(buf);
+        }
+
+        // --- ENCODE ---
+        log("\n🔄 Encoding savestream...");
+        // let the initial log paint
+        await new Promise(r => requestAnimationFrame(r));
+        const t0 = performance.now();
+        const encoded = await encode(savestates);
+        const t1 = performance.now();
+        encodeTime.textContent = `⏱️ Encoding took ${(t1 - t0).toFixed(1)} ms`;
+        log("✅ Encoding complete!");
+        dlEncode.style.display = "inline-block";
+        dlEncode.href = URL.createObjectURL(new Blob([encoded]));
+        dlEncode.download = "savestream.bin";
+
+        // --- DECODE ---
+        log("\n🔄 Decoding entire savestream...");
+        const t2 = performance.now();
+        const decoded = [];
+        const decGen = await decode(encoded);
+        let idx = 0;
+        for await (const st of decGen) {
+          decoded.push(st);
+          log(`→ Decoded state ${idx}`);
+          idx++;
+        }
+        const t3 = performance.now();
+        decodeTime.textContent = `⏱️ Decoding took ${(t3 - t2).toFixed(1)} ms`;
+        log("✅ Decoding complete!");
+
+        if (decoded.length) {
+          dlDecode.style.display = "inline-block";
+          dlDecode.href = URL.createObjectURL(new Blob([decoded[0]]));
+          dlDecode.download = "decoded_state_0.bin";
+        }
+
+        log("\n🎉 All done!");
+      });
+    });
+  </script>
+</body>
+</html>

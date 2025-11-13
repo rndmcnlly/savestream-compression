@@ -1,4 +1,5 @@
 /* globals MessagePack */
+// OUTDATED - DO NOT USE
 
 // unpacks an array buffer containing a v86 state into a header, info, and buffer segment
 // params - (fileContent: ArrayBuffer)
@@ -108,7 +109,7 @@ function unalign(infoSegment, alignedBuffer, blockSize) {
   }
 
   //concatenate all blocks into single array buffer
-  let totalSize = unalignedBlocks.reduce((sum, block) => sum + (block.length + 3 & ~3), 0);
+  let totalSize = unalignedBlocks.reduce((sum, block) => sum + ((block.length + 3) & ~3), 0);
   let bufferSegment = new Uint8Array(totalSize);
 
   let writeOffset = 0;
