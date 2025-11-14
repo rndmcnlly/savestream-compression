@@ -122,53 +122,29 @@ function makeUnalignedBufferBlock(infoBlock, alignedBufferBlock, blockSize) {
         offset += length + paddingLength; // move offset past padding
     }
 
-    // concatenate all unaligned blocks into a single buffer
-    const totalLength = unalignedBlocks.reduce((sum, block) => sum + block.length, 0);
+    // NEW (FIXED) LOGIC: Reconstruct the original buffer block with 4-byte padding
+    const totalLength = unalignedBlocks.reduce((sum, block) => sum + ((block.length + 3) & ~3), 0);
     const unalignedBufferBlock = new Uint8Array(totalLength);
 
     let currentOffset = 0;
     for (const block of unalignedBlocks) {
         unalignedBufferBlock.set(block, currentOffset);
-        currentOffset += block.length;
+        currentOffset += (block.length + 3) & ~3; // Add padding for the *next* block's offset
     }
 
     return unalignedBufferBlock;
 }
 
-// create a deterministic numeric hash from a Uint8Array for use as Map key (could potentially have collisions for larger data sets)
-// params - block (Uint8Array): the byte block
-// returns - hashKey (string): a string representation of the numeric hash
-// Use a fast CRC32 implementation (table-based) for much faster hashing of large buffers.
-// Returns an unsigned 32-bit numeric hash as a string (backwards-compatible with previous keys).
-const _crc32Table = (function buildCrcTable() {
-    const table = new Uint32Array(256);
-    for (let i = 0; i < 256; i++) {
-        let c = i;
-        for (let k = 0; k < 8; k++) {
-            c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-        }
-        table[i] = c >>> 0;
-    }
-    return table;
-})();
-
-function crc32(buffer) {
-    let crc = 0xFFFFFFFF;
-    for (let i = 0; i < buffer.length; i++) {
-        crc = (crc >>> 8) ^ _crc32Table[(crc ^ buffer[i]) & 0xFF];
-    }
-    return (crc ^ 0xFFFFFFFF) >>> 0;
-}
-
+/**
+ * Creates a collision-free string key from a Uint8Array.
+ * Using block.toString() (e.g., "1,2,3,4") is a reliable way to get a
+ * unique key for a byte sequence in a JavaScript Map, analogous to
+ * using raw bytes as a dict key in Python.
+ * @param {Uint8Array} block The byte block
+ * @returns {string} A unique string key
+ */
 function hashBlock(block) {
-    // Accept both Uint8Array and ArrayBuffer views
-    if (!(block && typeof block.length === 'number')) {
-        // fallback to previous simple loop for unexpected input
-        let hash = 0;
-        for (let i = 0; i < block.length; i++) hash = (hash * 31 + block[i]) >>> 0;
-        return hash.toString();
-    }
-    return crc32(block).toString();
+    return block.toString();
 }
 
 // encode a sequence of v86 savestates into a single compressed savestream
@@ -393,5 +369,14 @@ window.v86Savestream = {
   encode,
   decode,
   decodeOne,
-  trim
+  trim,
+  decodeLen,
+  _internal: { // Export internal functions for testing
+    padTo,
+    splitV86Savestate,
+    recombineV86Savestate,
+    makeAlignedBufferBlock,
+    makeUnalignedBufferBlock,
+    hashBlock
+  }
 };

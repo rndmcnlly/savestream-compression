@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>💾 v86 Savestream Demo</title>
+  <title>💾 v86 Savestream Test Suite </title>
   <style>
     body {
       font-family: monospace;
@@ -12,48 +12,36 @@
     }
     h2 { color: #9f9; }
     .section { margin-bottom: 20px; }
-    #output {
+    #testOutput {
       background: #000;
       color: #0f0;
       border: 1px solid #444;
       padding: 10px;
       white-space: pre-wrap;
-      height: 300px;
+      height: 600px;
       overflow-y: auto;
-    }
-    .download-link {
-      display: inline-block;
-      margin-top: 10px;
-      color: #9f9;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-    .time {
-      color: #9f9;
       font-size: 0.9em;
     }
+    button {
+        background: #333;
+        color: #0f0;
+        border: 1px solid #0f0;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+    button:hover { background: #444; }
   </style>
 </head>
 
 <body>
-  <h2>💾 v86 Savestream Demo</h2>
+  <h2>💾 v86 Savestream Test Suite </h2>
 
   <div class="section">
-    <p>Select a folder containing v86 savestates:</p>
+    <p>Please select the folder containing your unzipped <code>.bin</code> savestates (e.g., the unzipped <code>msdos-states</code> folder).</p>
     <input type="file" id="folderPicker" webkitdirectory multiple />
   </div>
 
-  <div class="section">
-    <div class="time" id="encodeTime"></div>
-    <a id="downloadEncoded" class="download-link" style="display:none;">⬇️ Download Encoded Savestream</a>
-  </div>
-
-  <div class="section">
-    <div class="time" id="decodeTime"></div>
-    <a id="downloadDecoded" class="download-link" style="display:none;">⬇️ Download First Decoded State</a>
-  </div>
-
-  <pre id="output"></pre>
+  <pre id="testOutput">Awaiting savestate folder to run tests...</pre>
 
   <!-- Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/@msgpack/msgpack@3.1.1/dist.umd/msgpack.min.js"></script>
@@ -61,90 +49,302 @@
   <script src="./savestreams_updated.js"></script>
 
   <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      const out = document.getElementById("output");
-      const log = msg => {
-        out.textContent += msg + "\n";
-        out.scrollTop = out.scrollHeight;
-      };
+    // --- Test Helpers ---
+    const out = document.getElementById("testOutput");
+    const log = (msg) => out.textContent += msg + "\n";
+    const pass = (msg) => log(`✅ PASS: ${msg}`);
+    const fail = (msg, e) => {
+        log(`❌ FAIL: ${msg}`);
+        if (e) {
+            log(`      Error: ${e.message}`);
+            log(`      Stack: ${e.stack ? e.stack.replace(e.message, '') : 'N/A'}`);
+        }
+    };
+    const assert = (condition, message) => {
+        if (condition) pass(message);
+        else throw new Error(message);
+    };
+    const assertEquals = (a, b, message) => {
+        if (a === b) pass(message);
+        else throw new Error(`${message} (Expected: ${b}, Got: ${a})`);
+    };
+    const assertArraysEqual = (a, b, message) => {
+        if (!a || !b) {
+            throw new Error(`${message} (One of the arrays is null or undefined)`);
+        }
+        if (a.length !== b.length) {
+            throw new Error(`${message} (length mismatch: ${a.length} vs ${b.length})`);
+        }
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] !== b[i]) {
+                // To avoid flooding the console, only show the first mismatch
+                throw new Error(`${message} (mismatch at index ${i}: ${a[i]} vs ${b[i]})`);
+            }
+        }
+        pass(message);
+    };
+    
+    // *** MODIFIED to include timing and forced UI repaint ***
+    const runTest = async (name, testFn) => {
+        log(`\n--- Testing ${name} ---`);
+        const t0 = performance.now();
+        let error = null;
+        try {
+            await testFn();
+        } catch (e) {
+            error = e;
+        }
+        const t1 = performance.now();
+        const duration = ((t1 - t0) / 1000).toFixed(3); // in seconds
 
-      const encodeTime = document.getElementById("encodeTime");
-      const decodeTime = document.getElementById("decodeTime");
-      const dlEncode = document.getElementById("downloadEncoded");
-      const dlDecode = document.getElementById("downloadDecoded");
+        if (error) {
+            fail(name, error);
+        }
+        log(`--- Finished ${name} in ${duration}s ---`);
+        
+        // *** THIS IS THE FIX for real-time logs ***
+        // Yield to the event loop to allow the UI to update.
+        await new Promise(r => setTimeout(r, 0));
+    };
+    // --- End Test Helpers ---
 
-      const { encode, decode, decodeOne, trim } = window.v86Savestream || {};
 
-      if (!encode || !decode) {
-        log("❌ v86Savestream not loaded. Check savestreams_updated.js");
+    // Main function to run all tests
+    async function runAllTests(savestates) {
+      out.textContent = "Running tests...\n";
+
+      // Get APIs
+      const { _internal } = window.v86Savestream;
+      const {
+        padTo,
+        splitV86Savestate,
+        recombineV86Savestate,
+        makeAlignedBufferBlock,
+        makeUnalignedBufferBlock,
+        hashBlock
+      } = _internal;
+      
+      const { encode, decode, decodeLen, decodeOne, trim } = window.v86Savestream;
+      
+      const textEncoder = new TextEncoder();
+      const textDecoder = new TextDecoder("utf-8");
+
+      // --- Mock Data Tests (from Python) ---
+
+      await runTest("test_pad_to (Private API)", () => {
+          assertArraysEqual(padTo(textEncoder.encode('1234'), 4), textEncoder.encode('1234'), "pads 4 bytes to 4");
+          assertArraysEqual(padTo(textEncoder.encode('123'), 4), new Uint8Array([49, 50, 51, 0]), "pads 3 bytes to 4");
+          assertArraysEqual(padTo(textEncoder.encode('1'), 4), new Uint8Array([49, 0, 0, 0]), "pads 1 byte to 4");
+          
+          const padded256 = padTo(textEncoder.encode('12345'), 256);
+          assertEquals(padded256.length, 256, "pads 5 bytes to 256 length");
+          assertArraysEqual(padded256.subarray(0, 5), textEncoder.encode('12345'), "padded 256 buffer has correct prefix");
+      });
+      
+      await runTest("test_hashBlock (string key) (Private API)", () => {
+        const blockA = new Uint8Array([1, 2, 3, 4, 5]);
+        const blockB = new Uint8Array([1, 2, 3, 4, 5]);
+        const blockC = new Uint8Array([5, 4, 3, 2, 1]);
+        const hashA = hashBlock(blockA);
+        const hashB = hashBlock(blockB);
+        const hashC = hashBlock(blockC);
+
+        assert(hashA === hashB, "identical blocks produce identical hashes ('1,2,3,4,5')");
+        assert(hashA !== hashC, "different blocks produce different hashes");
+        assert(typeof hashA === "string", "returns a string key");
+      });
+
+      await runTest("test_empty_input (Public API)", async () => {
+          const encoded = await encode([]);
+          const len = await decodeLen(encoded);
+          assertEquals(len, 0, "decodeLen on empty stream is 0");
+          
+          const decoded = [];
+          for await (const state of await decode(encoded)) {
+              decoded.push(state);
+          }
+          assertEquals(decoded.length, 0, "decoding empty stream results in empty array");
+      });
+
+      // --- Real Data Tests (from Python) ---
+      
+      await runTest("test_split_and_recombine (Private API, Real Data)", () => {
+          assert(savestates.length > 0, "Must have at least 1 savestate");
+          for (let i = 0; i < savestates.length; i++) {
+              const file_content = savestates[i];
+              const { headerBlock, infoBlock, bufferBlock } = splitV86Savestate(file_content);
+              const recombined = recombineV86Savestate(headerBlock, infoBlock, bufferBlock);
+              assertArraysEqual(recombined, file_content, `Recombined file ${i} matches original`);
+          }
+      });
+      
+      await runTest("test_buffer_block_alignments (Private API, Real Data)", () => {
+          for (let i = 0; i < savestates.length; i++) {
+              const file_content = savestates[i];
+              const { headerBlock, infoBlock, bufferBlock } = splitV86Savestate(file_content);
+              
+              const aligned_buffer = makeAlignedBufferBlock(infoBlock, bufferBlock, 256);
+              const unaligned_buffer = makeUnalignedBufferBlock(infoBlock, aligned_buffer, 256);
+              
+              assertArraysEqual(unaligned_buffer, bufferBlock, `Unaligned buffer ${i} matches original buffer block`);
+          }
+      });
+      
+      let encoded_savestream; // Store for subsequent tests
+      
+      await runTest("test_encode_decode_roundtrip (Public API, Real Data)", async () => {
+          encoded_savestream = await encode(savestates);
+          assert(encoded_savestream instanceof Uint8Array, "Encoded savestream is Uint8Array");
+          
+          const decoded_savestates = [];
+          for await (const state of await decode(encoded_savestream)) {
+              decoded_savestates.push(state);
+          }
+          
+          assertEquals(decoded_savestates.length, savestates.length, "Decoded savestates length matches original");
+          
+          for(let i = 0; i < savestates.length; i++) {
+              assertArraysEqual(decoded_savestates[i], savestates[i], `Decoded state ${i} matches original`);
+          }
+      });
+      
+      await runTest("test_decode_len (Public API, Real Data)", async () => {
+          if (!encoded_savestream) {
+              log("   WARN: encoding stream... (should have been done in previous test)");
+              encoded_savestream = await encode(savestates);
+          }
+          const len = await decodeLen(encoded_savestream);
+          assertEquals(len, savestates.length, "decode_len matches original length");
+      });
+      
+      await runTest("test_decode_one (Public API, Real Data)", async () => {
+          if (!encoded_savestream) {
+              log("   WARN: encoding stream... (should have been done in previous test)");
+              encoded_savestream = await encode(savestates);
+          }
+          for (let i = 0; i < savestates.length; i++) {
+              const decoded_one = await decodeOne(encoded_savestream, i);
+              assertArraysEqual(decoded_one, savestates[i], `decode_one(${i}) matches original state ${i}`);
+          }
+      });
+
+      await runTest("test_trim_savestates_roundtrip (Public API, Real Data)", async () => {
+          if (savestates.length < 3) {
+              log("--- Skipping trim test: requires at least 3 savestates.");
+              return;
+          }
+          if (!encoded_savestream) {
+              log("   WARN: encoding stream... (should have been done in previous test)");
+              encoded_savestream = await encode(savestates);
+          }
+
+          const trimmed_stream = await trim(encoded_savestream, 1, 2);
+          const decoded = [];
+          for await (const state of await decode(trimmed_stream)) {
+              decoded.push(state);
+          }
+          
+          assertEquals(decoded.length, 1, "Trim (1, 2) results in 1 state");
+          assertArraysEqual(decoded[0], savestates[1], "Trim (1, 2) content matches state 1");
+          
+          // Test trim(1) (from index 1 to end)
+          const trimmed_stream_2 = await trim(encoded_savestream, 1);
+          const decoded_2 = [];
+          for await (const state of await decode(trimmed_stream_2)) {
+              decoded_2.push(state);
+          }
+          assertEquals(decoded_2.length, savestates.length - 1, "Trim (1) results in correct number of states");
+          assertArraysEqual(decoded_2[0], savestates[1], "Trim (1) content 0 matches state 1");
+          assertArraysEqual(decoded_2[1], savestates[2], "Trim (1) content 1 matches state 2");
+      });
+      
+      await runTest("test_info_encode_decode_roundtrip (Misc, Real Data)", async () => {
+          let previous_info = {};
+          let reconstructed_info = {};
+          
+          for (const state of savestates) {
+              const { infoBlock } = splitV86Savestate(state);
+              const info = JSON.parse(textDecoder.decode(infoBlock));
+              
+              // Use fast-json-patch to get diff and apply patch
+              const diff = jsonpatch.compare(previous_info, info);
+              reconstructed_info = jsonpatch.applyPatch(reconstructed_info, diff).newDocument;
+              
+              // This assert is tricky due to key order, so we stringify consistently
+              const recon_str = JSON.stringify(reconstructed_info);
+              const info_str = JSON.stringify(info);
+              
+              assertEquals(recon_str, info_str, "Reconstructed info matches original info");
+              previous_info = info; // for next iteration
+          }
+      });
+      
+      await runTest("test_deduplication_efficiency (Misc, Real Data)", async () => {
+          if (savestates.length < 2) {
+              log("--- Skipping efficiency test: requires at least 2 savestates.");
+              return;
+          }
+          if (!encoded_savestream) {
+              log("   WARN: encoding stream... (should have been done in previous test)");
+              encoded_savestream = await encode(savestates);
+          }
+
+          let total_size = 0;
+          for (const state of savestates) {
+              total_size += state.length;
+          }
+          
+          const compression_ratio = encoded_savestream.length / total_size;
+          log(`      Total original size: ${total_size} bytes`);
+          log(`      Encoded size: ${encoded_savestream.length} bytes`);
+          log(`      Compression ratio: ${compression_ratio.toFixed(4)}`);
+          assert(compression_ratio < 0.5, `Compression ratio (${compression_ratio.toFixed(4)}) is less than 0.5`);
+      });
+
+      log("\n--- All tests complete ---");
+    }
+
+    // --- Main Entry Point ---
+    document.getElementById("folderPicker").addEventListener("change", async e => {
+      out.textContent = "Loading files...";
+      const savestates = [];
+      
+      const files = Array.from(e.target.files)
+        .filter(f => f.name.toLowerCase().endsWith(".bin"))
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+
+      if (!files.length) {
+        out.textContent = "No .bin files found in selected folder. Please try again.";
         return;
       }
+      
+      log(`Loading ${files.length} savestate(s)...`);
 
-      document.getElementById("folderPicker").addEventListener("change", async e => {
-        out.textContent = "";
-        dlEncode.style.display = "none";
-        dlDecode.style.display = "none";
-
-        // Sort files numerically by name (e.g., save(1).bin, save(2).bin)
-        const files = Array.from(e.target.files)
-          .filter(f => f.name.toLowerCase().endsWith(".bin"))
-          .sort((a, b) => {
-            const numA = parseInt(a.name.match(/\((\d+)\)/)?.[1] || 0, 10);
-            const numB = parseInt(b.name.match(/\((\d+)\)/)?.[1] || 0, 10);
-            return numA - numB;
-          });
-
-        if (!files.length) {
-          log("⚠️ No .bin files found.");
-          return;
-        }
-
-        log(`📁 Loaded ${files.length} savestate(s)`);
-        const savestates = [];
-
-        for (const file of files) {
-          log(`→ Reading ${file.name}...`);
-          const buf = new Uint8Array(await file.arrayBuffer());
-          savestates.push(buf);
-        }
-
-        // --- ENCODE ---
-        log("\n🔄 Encoding savestream...");
-        // let the initial log paint
-        await new Promise(r => requestAnimationFrame(r));
-        const t0 = performance.now();
-        const encoded = await encode(savestates);
-        const t1 = performance.now();
-        encodeTime.textContent = `⏱️ Encoding took ${(t1 - t0).toFixed(1)} ms`;
-        log("✅ Encoding complete!");
-        dlEncode.style.display = "inline-block";
-        dlEncode.href = URL.createObjectURL(new Blob([encoded]));
-        dlEncode.download = "savestream.bin";
-
-        // --- DECODE ---
-        log("\n🔄 Decoding entire savestream...");
-        const t2 = performance.now();
-        const decoded = [];
-        const decGen = await decode(encoded);
-        let idx = 0;
-        for await (const st of decGen) {
-          decoded.push(st);
-          log(`→ Decoded state ${idx}`);
-          idx++;
-        }
-        const t3 = performance.now();
-        decodeTime.textContent = `⏱️ Decoding took ${(t3 - t2).toFixed(1)} ms`;
-        log("✅ Decoding complete!");
-
-        if (decoded.length) {
-          dlDecode.style.display = "inline-block";
-          dlDecode.href = URL.createObjectURL(new Blob([decoded[0]]));
-          dlDecode.download = "decoded_state_0.bin";
-        }
-
-        log("\n🎉 All done!");
-      });
+      for (const file of files) {
+        log(`  > ${file.name}`);
+        const buf = new Uint8Array(await file.arrayBuffer());
+        savestates.push(buf);
+      }
+      
+      try {
+        // Run all tests
+        await runAllTests(savestates);
+      } catch(err) {
+        fail("A critical error occurred during test execution.", err);
+      }
     });
+
+    // Check for dependencies on load
+    window.addEventListener("DOMContentLoaded", () => {
+         if (typeof MessagePack === 'undefined') {
+            fail("FATAL: 'MessagePack' is not defined. Please download 'msgpack.min.js' and save it next to this HTML file.");
+         }
+         if (typeof jsonpatch === 'undefined') {
+            fail("FATAL: 'jsonpatch' is not defined. Please download 'fast-json-patch.min.js' and save it next to this HTML file.");
+         }
+    });
+
   </script>
+
 </body>
 </html>
